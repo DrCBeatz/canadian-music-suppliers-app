@@ -25,7 +25,7 @@ SECRET_KEY = "django-insecure-8m&+b^p0h-9mn_-#x741n5vj%_iq)yz17gof)222@o1ui1#tw4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["0.0.0.0"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     # Local
     "accounts.apps.AccountsConfig",
     "cmsa.apps.CmsaConfig",
+    "rest_framework",
 ]
 
 MIDDLEWARE = [
