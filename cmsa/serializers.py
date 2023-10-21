@@ -15,9 +15,16 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class VendorSerializer(serializers.ModelSerializer):
-    supplier = SupplierSerializer(read_only=True)
+    suppliers = SupplierSerializer(
+        many=True, read_only=True
+    )  # Change 'supplier' to 'suppliers' and make it many=True
     categories = CategorySerializer(many=True, read_only=True)
 
     class Meta:
         model = Vendor
-        fields = ["id", "name", "supplier", "categories"]
+        fields = [
+            "id",
+            "name",
+            "suppliers",
+            "categories",
+        ]  # Change 'supplier' to 'suppliers'

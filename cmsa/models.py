@@ -17,7 +17,8 @@ class Category(models.Model):
 
 class Vendor(models.Model):
     name = models.CharField(max_length=200)
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    # supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    suppliers = models.ManyToManyField(Supplier, related_name="vendors")
     categories = models.ManyToManyField(Category, related_name="vendors")
 
     def __str__(self):
