@@ -1,6 +1,7 @@
 import csv
 import os
 import django
+from django.conf import settings
 
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "core.settings")
@@ -34,4 +35,5 @@ def import_data_from_tsv(filename):
 
 
 if __name__ == "__main__":
-    import_data_from_tsv("CMT.tsv")
+    file_path = os.path.join(settings.BASE_DIR, "CMT.tsv")
+    import_data_from_tsv(file_path)
