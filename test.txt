@@ -1,3 +1,0 @@
-docker-compose exec web python manage.py startapp accounts
-
-Vincent, William S.. Django for Professionals: Production websites with Python & Django (Welcome to Django Book 3) (p. 74). leanpub.com. Kindle Edition. 

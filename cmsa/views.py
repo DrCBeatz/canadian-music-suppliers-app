@@ -3,10 +3,15 @@ from rest_framework import viewsets
 from .models import Vendor, Supplier, Category
 from .serializers import VendorSerializer, SupplierSerializer, CategorySerializer
 from django.db.models import Q
+from django.shortcuts import render
 
 
-class HomePageView(TemplateView):
-    template_name = "home.html"
+def frontend(request):
+    return render(request, "frontend/index.html")
+
+
+# class HomePageView(TemplateView):
+#     template_name = "home.html"
 
 
 class VendorViewSet(viewsets.ModelViewSet):
