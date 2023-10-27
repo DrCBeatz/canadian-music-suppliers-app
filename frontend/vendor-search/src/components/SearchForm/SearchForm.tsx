@@ -1,3 +1,5 @@
+// SearchForm.tsx
+
 import "./SearchForm.css";
 
 import { useState } from "react";
@@ -7,7 +9,7 @@ interface SearchFormProps {
 }
 
 const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState<string>("");
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,7 +23,9 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
         type="text"
         placeholder="Search vendors"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setSearch(e.target.value)
+        }
       />
       <button className="search-form__button" type="submit">
         Search
