@@ -4,7 +4,7 @@ import { useState } from "react";
 import "./VendorSearch.css";
 import AppHeader from "../AppHeader/AppHeader";
 import SearchForm from "../SearchForm/SearchForm";
-import VendorsTable from "../VendorsTable/VendorsTable";
+import VendorsTable, { Vendor } from "../VendorsTable/VendorsTable";
 
 let apiUrl: string;
 
@@ -14,10 +14,10 @@ if (process.env.NODE_ENV === "development") {
   apiUrl = "https://secure-falls-59693-7d816c7f067e.herokuapp.com";
 }
 
-const VendorSearch = () => {
-  const [vendors, setVendors] = useState([]);
+const VendorSearch: React.FC = () => {
+  const [vendors, setVendors] = useState<Vendor[]>([]);
 
-  const searchVendors = async (searchTerm: string) => {
+  const searchVendors = async (searchTerm: string): Promise<void> => {
     try {
       const response = await fetch(
         `${apiUrl}/routes/vendors/?search=${searchTerm}`
@@ -25,10 +25,14 @@ const VendorSearch = () => {
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      const data = await response.json();
+      const data: Vendor[] = await response.json();
       setVendors(data);
-    } catch (error) {
-      console.error("Error fetching data: ", error);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error fetching data: ", error);
+      } else {
+        console.error("An unexpected error occurred:", error);
+      }
     }
   };
 

@@ -1,6 +1,8 @@
+// VendorsTable.tsx
+
 import "./VendorsTable.css";
 
-interface Vendor {
+export interface Vendor {
   id: number;
   name: string;
   suppliers: { name: string }[];
