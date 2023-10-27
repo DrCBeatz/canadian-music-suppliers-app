@@ -4,3 +4,4 @@ db.sqlite3
 .DS_Store
 docker-compose-prod.yml
 .env
+frontend/vendor-search/node_modules/

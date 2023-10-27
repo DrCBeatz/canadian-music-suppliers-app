@@ -1,0 +1,10 @@
+/* General styling */
+body {
+  font-family: Arial, sans-serif;
+  margin: 2rem;
+}
+
+.vendor-search {
+  max-width: 800px;
+  margin: 0 auto;
+}
