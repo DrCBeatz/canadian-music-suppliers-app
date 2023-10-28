@@ -10,10 +10,6 @@ def frontend(request):
     return render(request, "frontend/index.html")
 
 
-# class HomePageView(TemplateView):
-#     template_name = "home.html"
-
-
 class VendorViewSet(viewsets.ModelViewSet):
     queryset = Vendor.objects.all()
     serializer_class = VendorSerializer

@@ -2,7 +2,6 @@ from django.urls import path
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    # HomePageView,
     VendorViewSet,
     SupplierViewSet,
     CategoryViewSet,
@@ -17,5 +16,4 @@ router.register(r"categories", CategoryViewSet)
 urlpatterns = [
     path("", frontend, name="frontend"),
     path("routes/", include(router.urls)),
-    # path("home/", HomePageView.as_view(), name="home"),
 ]
