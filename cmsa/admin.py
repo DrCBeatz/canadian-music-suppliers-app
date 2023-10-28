@@ -12,18 +12,10 @@ class VendorSupplierInline(admin.TabularInline):
 class VendorAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "contact_name",
-        "contact_email",
-        "website",
-        "phone",
         "display_suppliers",
     )
     search_fields = (
         "name",
-        "contact_name",
-        "contact_email",
-        "website",
-        "phone",
         "suppliers__name",
     )
     inlines = [VendorSupplierInline]
@@ -36,8 +28,20 @@ class VendorAdmin(admin.ModelAdmin):
 
 
 class SupplierAdmin(admin.ModelAdmin):
-    list_display = ("name",)
-    search_fields = ("name",)
+    list_display = (
+        "name",
+        "contact_name",
+        "contact_email",
+        "website",
+        "phone",
+    )
+    search_fields = (
+        "name",
+        "contact_name",
+        "contact_email",
+        "website",
+        "phone",
+    )
 
 
 class CategoryAdmin(admin.ModelAdmin):

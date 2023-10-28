@@ -7,7 +7,14 @@ from .models import Vendor, Supplier, Category
 class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
-        fields = ["id", "name"]
+        fields = [
+            "id",
+            "name",
+            "contact_name",
+            "contact_email",
+            "website",
+            "phone",
+        ]
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -25,10 +32,6 @@ class VendorSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            "contact_name",
-            "contact_email",
-            "website",
-            "phone",
             "suppliers",
             "categories",
         ]
