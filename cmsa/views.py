@@ -22,9 +22,7 @@ class VendorViewSet(viewsets.ModelViewSet):
         if search_term is not None:
             queryset = queryset.filter(
                 Q(name__icontains=search_term)
-                | Q(
-                    suppliers__name__icontains=search_term
-                )  # Change 'supplier' to 'suppliers'
+                | Q(suppliers__name__icontains=search_term)
                 | Q(categories__name__icontains=search_term)
             ).distinct()
         return queryset

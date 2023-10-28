@@ -1,4 +1,4 @@
-# tests/test_accounts.py
+# accounts/tests.py
 import pytest
 from django.contrib.auth import get_user_model
 
