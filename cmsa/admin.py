@@ -1,3 +1,5 @@
+# cmsa/admin.py
+
 from django.contrib import admin
 from .models import Vendor, Supplier, Category
 
@@ -10,10 +12,18 @@ class VendorSupplierInline(admin.TabularInline):
 class VendorAdmin(admin.ModelAdmin):
     list_display = (
         "name",
+        "contact_name",
+        "contact_email",
+        "website",
+        "phone",
         "display_suppliers",
     )
     search_fields = (
         "name",
+        "contact_name",
+        "contact_email",
+        "website",
+        "phone",
         "suppliers__name",
     )
     inlines = [VendorSupplierInline]

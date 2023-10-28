@@ -1,3 +1,5 @@
+# cmsa/serializers.py
+
 from rest_framework import serializers
 from .models import Vendor, Supplier, Category
 
@@ -23,6 +25,10 @@ class VendorSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "contact_name",
+            "contact_email",
+            "website",
+            "phone",
             "suppliers",
             "categories",
         ]
