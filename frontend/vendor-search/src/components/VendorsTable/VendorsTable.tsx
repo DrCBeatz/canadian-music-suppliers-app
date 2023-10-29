@@ -1,5 +1,5 @@
 // VendorsTable.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Modal from "react-modal";
 import "./VendorsTable.css";
 import "./VendorsTableModal.css";
@@ -26,7 +26,6 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
   const [currentSupplier, setCurrentSupplier] = useState<
     null | Vendor["suppliers"][0]
   >(null);
-  const [closeAnimationStarted, setCloseAnimationStarted] = useState(false);
 
   const openModal = (supplier: Vendor["suppliers"][0]) => {
     setCurrentSupplier(supplier);
@@ -34,22 +33,8 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
   };
 
   const closeModal = () => {
-    setCloseAnimationStarted(true);
+    setIsModalOpen(false);
   };
-
-  useEffect(() => {
-    const modalContent = document.querySelector(
-      ".vendors-table__modal-content"
-    );
-    if (modalContent) {
-      modalContent.addEventListener("transitionend", () => {
-        if (closeAnimationStarted) {
-          setIsModalOpen(false);
-          setCloseAnimationStarted(false);
-        }
-      });
-    }
-  }, [closeAnimationStarted]);
 
   return (
     <div>
@@ -114,16 +99,12 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
         className={{
           base: "vendors-table__modal-content",
           afterOpen: "vendors-table__modal-content--after-open",
-          beforeClose: closeAnimationStarted
-            ? "vendors-table__modal-content--before-close"
-            : "",
+          beforeClose: "vendors-table__modal-content--before-close",
         }}
         overlayClassName={{
           base: "vendors-table__modal-overlay",
           afterOpen: "vendors-table__modal-overlay--after-open",
-          beforeClose: closeAnimationStarted
-            ? "vendors-table__modal-overlay--before-close"
-            : "",
+          beforeClose: "vendors-table__modal-overlay--before-close",
         }}
       >
         <h2 className="vendors-table__modal-header">{currentSupplier?.name}</h2>
