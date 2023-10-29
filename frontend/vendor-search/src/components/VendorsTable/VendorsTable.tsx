@@ -5,7 +5,13 @@ import "./VendorsTable.css";
 export interface Vendor {
   id: number;
   name: string;
-  suppliers: { name: string }[];
+  suppliers: {
+    name: string;
+    contact_name?: string;
+    contact_email?: string;
+    website?: string;
+    phone?: string;
+  }[];
   categories: { name: string }[];
 }
 
@@ -19,6 +25,10 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => (
       <tr>
         <th className="vendors-table__header-cell">Vendor</th>
         <th className="vendors-table__header-cell">Suppliers</th>
+        <th className="vendors-table__header-cell">Contact Name</th>
+        <th className="vendors-table__header-cell">Contact Email</th>
+        <th className="vendors-table__header-cell">Website</th>
+        <th className="vendors-table__header-cell">Phone</th>
         <th className="vendors-table__header-cell">Categories</th>
       </tr>
     </thead>
@@ -28,6 +38,18 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => (
           <td className="vendors-table__cell">{vendor.name}</td>
           <td className="vendors-table__cell">
             {vendor.suppliers.map((supplier) => supplier.name).join(", ")}
+          </td>
+          <td className="vendors-table__cell">
+            {vendor.suppliers[0]?.contact_name || "-"}
+          </td>
+          <td className="vendors-table__cell">
+            {vendor.suppliers[0]?.contact_email || "-"}
+          </td>
+          <td className="vendors-table__cell">
+            {vendor.suppliers[0]?.website || "-"}
+          </td>
+          <td className="vendors-table__cell">
+            {vendor.suppliers[0]?.phone || "-"}
           </td>
           <td className="vendors-table__cell">
             {vendor.categories.map((category) => category.name).join(", ")}
