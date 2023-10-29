@@ -94,6 +94,7 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
 
       <Modal
         isOpen={isModalOpen}
+        closeTimeoutMS={300}
         onRequestClose={closeModal}
         contentLabel="Supplier Details"
         className={{

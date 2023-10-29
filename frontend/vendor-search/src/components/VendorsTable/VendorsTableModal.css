@@ -11,7 +11,7 @@
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   opacity: 0;
-  transition: opacity 300ms;
+  transition: opacity 300ms ease-in-out;
 }
 
 .vendors-table__modal-overlay--after-open {
@@ -67,72 +67,16 @@
 .vendors-table__modal-close-button:hover {
   background-color: #0056b3;
 }
-/* vendors-table__modal.css */
 
-.vendors-table__modal-overlay {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+.ReactModal__Overlay {
   opacity: 0;
-  transition: opacity 200ms;
+  transition: opacity 300ms ease-in-out;
 }
 
-.vendors-table__modal-overlay--after-open {
+.ReactModal__Overlay--after-open {
   opacity: 1;
 }
 
-.vendors-table__modal-overlay--before-close {
+.ReactModal__Overlay--before-close {
   opacity: 0;
-}
-
-.vendors-table__modal-content {
-  width: 60%; /* 60% of the window width */
-  max-width: 500px; /* Maximum width */
-  background: white;
-  padding: 2rem;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  font-size: 1.1rem;
-  transform: translateY(-10%);
-  opacity: 0;
-  transition: transform 200ms, opacity 200ms;
-}
-
-.vendors-table__modal-content--after-open {
-  transform: translateY(0);
-  opacity: 1;
-}
-
-.vendors-table__modal-content--before-close {
-  transform: translateY(-10%);
-  opacity: 0;
-}
-
-.vendors-table__modal-header {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  color: #2774c7;
-  text-align: center;
-}
-
-.vendors-table__modal-close-button {
-  display: block;
-  margin: 1rem auto 0;
-  padding: 0.5rem 1rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.vendors-table__modal-close-button:hover {
-  background-color: #0056b3;
 }
