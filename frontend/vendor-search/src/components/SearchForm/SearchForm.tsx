@@ -20,8 +20,8 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch }) => {
     <form onSubmit={handleFormSubmit}>
       <input
         className="search-form__input"
-        type="text"
         placeholder="Search vendors"
+        type="search"
         value={search}
         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
           setSearch(e.target.value)
