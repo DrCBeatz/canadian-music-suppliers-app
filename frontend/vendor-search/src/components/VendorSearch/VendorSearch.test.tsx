@@ -1,5 +1,11 @@
 // VendorSearch.test.tsx
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  within,
+  waitFor,
+} from "@testing-library/react";
 import VendorSearch from "./VendorSearch";
 import { vi } from "vitest";
 
@@ -10,8 +16,8 @@ type FetchResponse = {
 
 type FetchMock = typeof fetch & {
   mockResolvedValueOnce: (response: FetchResponse) => void;
+  mockRejectedValueOnce: (error: Error) => void;
 };
-
 describe("VendorSearch", () => {
   beforeEach(() => {
     // Clear all mocks before each test
@@ -67,7 +73,6 @@ describe("VendorSearch", () => {
 
     (fetch as FetchMock).mockResolvedValueOnce(createFetchResponse(mockData));
 
-
     console.log("Mock data setup complete.");
 
     render(<VendorSearch />);
@@ -82,10 +87,37 @@ describe("VendorSearch", () => {
 
     // Expect the VendorsTable to be populated with the mock data
     const displayedVendor = await screen.findByText("Vendor 1");
-    
+
     expect(displayedVendor).toBeInTheDocument();
 
     // ... Check for other mock data entries as needed
+  });
+
+  test("handles errors on failed data fetch", async () => {
+    // Mock a failed fetch request
+    const mockError = "Network error";
+    (fetch as FetchMock).mockRejectedValueOnce(new Error(mockError));
+
+    // Spy on console.error
+    const consoleSpy = vi.spyOn(console, "error");
+
+    render(<VendorSearch />);
+
+    // Simulate a search action
+    const searchButton = screen.getByRole("button", { name: /search/i });
+    fireEvent.click(searchButton);
+
+    // Use waitFor to ensure the asynchronous operations inside the component complete
+    await waitFor(() => {
+      // Expect the error to be logged in the console
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error fetching data: ",
+        expect.objectContaining({ message: mockError })
+      );
+    });
+
+    // Cleanup the spy
+    consoleSpy.mockRestore();
   });
 
   // ... other tests will go here
