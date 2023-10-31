@@ -22,6 +22,8 @@ interface VendorsTableProps {
 }
 
 const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
+  console.log("Received vendors:", vendors);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSupplier, setCurrentSupplier] = useState<
     null | Vendor["suppliers"][0]

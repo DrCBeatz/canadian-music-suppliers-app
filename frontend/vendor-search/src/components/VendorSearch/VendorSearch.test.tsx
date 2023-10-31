@@ -1,5 +1,16 @@
-import { render, screen, within } from "@testing-library/react";
+// VendorSearch.test.tsx
+import { render, screen, fireEvent, within } from "@testing-library/react";
 import VendorSearch from "./VendorSearch";
+import { vi } from "vitest";
+
+type FetchResponse = {
+  ok: boolean;
+  json: () => Promise<unknown>;
+};
+
+type FetchMock = typeof fetch & {
+  mockResolvedValueOnce: (response: FetchResponse) => void;
+};
 
 describe("VendorSearch", () => {
   beforeEach(() => {
@@ -25,6 +36,56 @@ describe("VendorSearch", () => {
     expect(within(tbody).queryByText(/Supplier/)).not.toBeInTheDocument();
 
     expect(screen.queryByText(/Category/)).not.toBeInTheDocument();
+  });
+
+  test("populates VendorsTable on successful data fetch", async () => {
+    // Mock a successful fetch request
+    // Using 'any' here for mocking purposes during testing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    global.fetch = vi.fn() as any;
+
+    // Using 'any' here for mocking purposes during testing.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    function createFetchResponse(data: any) {
+      return {
+        ok: true,
+        json: () => new Promise((resolve) => resolve(data)),
+      };
+    }
+
+    console.log("Setting up mock data...");
+
+    const mockData = [
+      {
+        id: 1,
+        name: "Vendor 1",
+        suppliers: [{ name: "Supplier A" }],
+        categories: [{ name: "Category X" }],
+      },
+      // ... more mock data entries as needed
+    ];
+
+    (fetch as FetchMock).mockResolvedValueOnce(createFetchResponse(mockData));
+
+
+    console.log("Mock data setup complete.");
+
+    render(<VendorSearch />);
+
+    console.log("VendorSearch component rendered.");
+
+    // Simulate a search action
+    const searchButton = screen.getByRole("button", { name: /search/i });
+    fireEvent.click(searchButton);
+
+    console.log("Search button clicked.");
+
+    // Expect the VendorsTable to be populated with the mock data
+    const displayedVendor = await screen.findByText("Vendor 1");
+    
+    expect(displayedVendor).toBeInTheDocument();
+
+    // ... Check for other mock data entries as needed
   });
 
   // ... other tests will go here
