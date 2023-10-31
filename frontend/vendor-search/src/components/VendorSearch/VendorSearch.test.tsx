@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 import VendorSearch from "./VendorSearch";
 import { vi } from "vitest";
+import { Vendor } from "../VendorsTable/VendorsTable";
 
 type FetchResponse = {
   ok: boolean;
@@ -19,6 +20,12 @@ type FetchMock = typeof fetch & {
   mockRejectedValueOnce: (error: Error) => void;
 };
 describe("VendorSearch", () => {
+  const createFetchResponse = (data: Vendor[]): FetchResponse => {
+    return {
+      ok: true,
+      json: () => new Promise((resolve) => resolve(data)),
+    };
+  };
   beforeEach(() => {
     // Clear all mocks before each test
     vi.clearAllMocks();
@@ -49,15 +56,6 @@ describe("VendorSearch", () => {
     // Using 'any' here for mocking purposes during testing.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     global.fetch = vi.fn() as any;
-
-    // Using 'any' here for mocking purposes during testing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function createFetchResponse(data: any) {
-      return {
-        ok: true,
-        json: () => new Promise((resolve) => resolve(data)),
-      };
-    }
 
     console.log("Setting up mock data...");
 
@@ -120,5 +118,67 @@ describe("VendorSearch", () => {
     consoleSpy.mockRestore();
   });
 
+  test("calls searchVendors with the correct term on form submit", async () => {
+    render(<VendorSearch />);
+
+    // Mocking the fetch request so the actual network request doesn't go out
+    global.fetch = vi.fn() as unknown as FetchMock;
+
+    const searchTerm = "test vendor";
+    const searchInput = screen.getByRole("searchbox");
+    fireEvent.change(searchInput, { target: { value: searchTerm } });
+
+    const form = searchInput.closest("form");
+    if (form) {
+      fireEvent.submit(form);
+    }
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining(`?search=${searchTerm}`)
+      );
+    });
+  });
+
+  test("updates VendorsTable with new data after a successful search", async () => {
+    // Mock a successful fetch request
+    global.fetch = vi.fn() as unknown as FetchMock;
+
+    const mockData = [
+      {
+        id: 1,
+        name: "Test Vendor",
+        suppliers: [{ name: "Test Supplier" }],
+        categories: [{ name: "Test Category" }],
+      },
+    ];
+
+    (fetch as FetchMock).mockResolvedValueOnce(createFetchResponse(mockData));
+
+    render(<VendorSearch />);
+
+    const searchTerm = "test vendor";
+    const searchInput = screen.getByRole("searchbox");
+    fireEvent.change(searchInput, { target: { value: searchTerm } });
+
+    const form = searchInput.closest("form");
+    if (form) {
+      fireEvent.submit(form);
+    }
+
+    // Expect the VendorsTable to be populated with the mock data
+    const displayedVendor = await screen.findByText("Test Vendor");
+
+    expect(displayedVendor).toBeInTheDocument();
+    expect(screen.getByText("Test Supplier")).toBeInTheDocument();
+    expect(screen.getByText("Test Category")).toBeInTheDocument();
+  });
   // ... other tests will go here
 });
+
+// Search Vendors:
+
+// You could write tests to ensure that the correct API URL is used based on the environment (development or production). This might be a bit trickier because it involves environment variables, but it's possible with Jest by using jest.doMock() or other similar methods.
+// Async Function Behavior:
+
+// Test the async function searchVendors to ensure it makes the correct fetch request and sets the state appropriately.
