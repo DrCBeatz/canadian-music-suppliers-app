@@ -174,7 +174,64 @@ describe("VendorSearch", () => {
     expect(screen.getByText("Test Category")).toBeInTheDocument();
   });
   // ... other tests will go here
+
 });
+
+
+describe("API URL based on environment", () => {
+  afterEach(() => {
+    // Restore all environment variables after each test.
+    vi.unstubAllEnvs();
+  });
+
+  test("uses development API URL in development mode", async () => {
+    vi.stubEnv('NODE_ENV', 'development');
+
+    global.fetch = vi.fn() as unknown as FetchMock;
+
+    // Render the component AFTER setting the environment variable.
+    render(<VendorSearch />);
+
+    const searchInput = screen.getByRole("searchbox");
+    fireEvent.change(searchInput, { target: { value: "test" } });
+    const form = searchInput.closest("form");
+    if (form) {
+      fireEvent.submit(form);
+    }
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining("http://localhost:8000/routes/vendors/")
+      );
+    });
+  });
+
+  test("uses production API URL in production mode", async () => {
+    vi.stubEnv('NODE_ENV', 'production');
+
+    global.fetch = vi.fn() as unknown as FetchMock;
+
+    // Render the component AFTER setting the environment variable.
+    render(<VendorSearch />);
+
+    const searchInput = screen.getByRole("searchbox");
+    fireEvent.change(searchInput, { target: { value: "test" } });
+    const form = searchInput.closest("form");
+    if (form) {
+      fireEvent.submit(form);
+    }
+
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining("https://secure-falls-59693-7d816c7f067e.herokuapp.com/routes/vendors/")
+      );
+    });
+  });
+
+  // ... other tests ...
+});
+
+
 
 // Search Vendors:
 

@@ -6,18 +6,22 @@ import AppHeader from "../AppHeader/AppHeader";
 import SearchForm from "../SearchForm/SearchForm";
 import VendorsTable, { Vendor } from "../VendorsTable/VendorsTable";
 
-let apiUrl: string;
+console.log("Environment:", process.env.NODE_ENV);
 
-if (process.env.NODE_ENV === "development") {
-  apiUrl = "http://localhost:8000";
-} else {
-  apiUrl = "https://secure-falls-59693-7d816c7f067e.herokuapp.com";
+function getApiUrl() {
+  return process.env.NODE_ENV === "development"
+    ? "http://localhost:8000"
+    : "https://secure-falls-59693-7d816c7f067e.herokuapp.com";
 }
 
 const VendorSearch: React.FC = () => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
 
   const searchVendors = async (searchTerm: string): Promise<void> => {
+    const apiUrl = getApiUrl();
+    console.log(
+      `Fetching data from: ${apiUrl}/routes/vendors/?search=${searchTerm}`
+    );
     console.log(
       `Fetching data from: ${apiUrl}/routes/vendors/?search=${searchTerm}`
     );
@@ -26,6 +30,8 @@ const VendorSearch: React.FC = () => {
       const response = await fetch(
         `${apiUrl}/routes/vendors/?search=${searchTerm}`
       );
+      console.log("Response:", response);
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
