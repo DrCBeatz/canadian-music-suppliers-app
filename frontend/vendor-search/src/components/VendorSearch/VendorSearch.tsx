@@ -6,8 +6,6 @@ import AppHeader from "../AppHeader/AppHeader";
 import SearchForm from "../SearchForm/SearchForm";
 import VendorsTable, { Vendor } from "../VendorsTable/VendorsTable";
 
-console.log("Environment:", process.env.NODE_ENV);
-
 function getApiUrl() {
   return process.env.NODE_ENV === "development"
     ? "http://localhost:8000"
@@ -19,25 +17,17 @@ const VendorSearch: React.FC = () => {
 
   const searchVendors = async (searchTerm: string): Promise<void> => {
     const apiUrl = getApiUrl();
-    console.log(
-      `Fetching data from: ${apiUrl}/routes/vendors/?search=${searchTerm}`
-    );
-    console.log(
-      `Fetching data from: ${apiUrl}/routes/vendors/?search=${searchTerm}`
-    );
 
     try {
       const response = await fetch(
         `${apiUrl}/routes/vendors/?search=${searchTerm}`
       );
-      console.log("Response:", response);
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const data: Vendor[] = await response.json();
 
-      console.log("Fetched data:", data);
       setVendors(data);
     } catch (error: unknown) {
       if (error instanceof Error) {

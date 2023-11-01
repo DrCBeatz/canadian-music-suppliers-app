@@ -15,10 +15,15 @@ type FetchResponse = {
   json: () => Promise<unknown>;
 };
 
+type FetchMockType = typeof fetch & {
+  mockImplementation: (mock: () => Promise<FetchResponse>) => void;
+};
+
 type FetchMock = typeof fetch & {
   mockResolvedValueOnce: (response: FetchResponse) => void;
   mockRejectedValueOnce: (error: Error) => void;
 };
+
 describe("VendorSearch", () => {
   const createFetchResponse = (data: Vendor[]): FetchResponse => {
     return {
@@ -29,6 +34,14 @@ describe("VendorSearch", () => {
   beforeEach(() => {
     // Clear all mocks before each test
     vi.clearAllMocks();
+
+    // Set up a default fetch mock
+    global.fetch = vi.fn().mockImplementation(() => {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+      });
+    }) as FetchMockType;
   });
 
   test("renders components correctly on initial load", () => {
@@ -52,13 +65,6 @@ describe("VendorSearch", () => {
   });
 
   test("populates VendorsTable on successful data fetch", async () => {
-    // Mock a successful fetch request
-    // Using 'any' here for mocking purposes during testing.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    global.fetch = vi.fn() as any;
-
-    console.log("Setting up mock data...");
-
     const mockData = [
       {
         id: 1,
@@ -70,8 +76,6 @@ describe("VendorSearch", () => {
     ];
 
     (fetch as FetchMock).mockResolvedValueOnce(createFetchResponse(mockData));
-
-    console.log("Mock data setup complete.");
 
     render(<VendorSearch />);
 
@@ -91,38 +95,41 @@ describe("VendorSearch", () => {
     // ... Check for other mock data entries as needed
   });
 
+  /**
+   * This test verifies that the VendorSearch component handles network errors gracefully.
+   * When the fetch request to retrieve vendors fails, the error should be logged to the console.
+   *
+   * Note: The 'Network error' that appears in test logs is expected and is intentionally triggered by this test.
+   */
   test("handles errors on failed data fetch", async () => {
-    // Mock a failed fetch request
+    // Intentionally mock a failed fetch request to simulate a network error
     const mockError = "Network error";
     (fetch as FetchMock).mockRejectedValueOnce(new Error(mockError));
 
-    // Spy on console.error
+    // Spy on console.error to verify if the error gets logged as expected
     const consoleSpy = vi.spyOn(console, "error");
 
     render(<VendorSearch />);
 
-    // Simulate a search action
+    // Simulate a search action, which should trigger the fetch request
     const searchButton = screen.getByRole("button", { name: /search/i });
     fireEvent.click(searchButton);
 
-    // Use waitFor to ensure the asynchronous operations inside the component complete
+    // Use waitFor to ensure all asynchronous operations inside the component have completed
     await waitFor(() => {
-      // Expect the error to be logged in the console
+      // Check if the expected error message is logged to the console
       expect(consoleSpy).toHaveBeenCalledWith(
         "Error fetching data: ",
         expect.objectContaining({ message: mockError })
       );
     });
 
-    // Cleanup the spy
+    // Cleanup the spy to restore the original console.error behavior
     consoleSpy.mockRestore();
   });
 
   test("calls searchVendors with the correct term on form submit", async () => {
     render(<VendorSearch />);
-
-    // Mocking the fetch request so the actual network request doesn't go out
-    global.fetch = vi.fn() as unknown as FetchMock;
 
     const searchTerm = "test vendor";
     const searchInput = screen.getByRole("searchbox");
@@ -141,9 +148,6 @@ describe("VendorSearch", () => {
   });
 
   test("updates VendorsTable with new data after a successful search", async () => {
-    // Mock a successful fetch request
-    global.fetch = vi.fn() as unknown as FetchMock;
-
     const mockData = [
       {
         id: 1,
@@ -174,9 +178,7 @@ describe("VendorSearch", () => {
     expect(screen.getByText("Test Category")).toBeInTheDocument();
   });
   // ... other tests will go here
-
 });
-
 
 describe("API URL based on environment", () => {
   afterEach(() => {
@@ -185,9 +187,7 @@ describe("API URL based on environment", () => {
   });
 
   test("uses development API URL in development mode", async () => {
-    vi.stubEnv('NODE_ENV', 'development');
-
-    global.fetch = vi.fn() as unknown as FetchMock;
+    vi.stubEnv("NODE_ENV", "development");
 
     // Render the component AFTER setting the environment variable.
     render(<VendorSearch />);
@@ -207,9 +207,7 @@ describe("API URL based on environment", () => {
   });
 
   test("uses production API URL in production mode", async () => {
-    vi.stubEnv('NODE_ENV', 'production');
-
-    global.fetch = vi.fn() as unknown as FetchMock;
+    vi.stubEnv("NODE_ENV", "production");
 
     // Render the component AFTER setting the environment variable.
     render(<VendorSearch />);
@@ -223,7 +221,9 @@ describe("API URL based on environment", () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining("https://secure-falls-59693-7d816c7f067e.herokuapp.com/routes/vendors/")
+        expect.stringContaining(
+          "https://secure-falls-59693-7d816c7f067e.herokuapp.com/routes/vendors/"
+        )
       );
     });
   });
@@ -231,11 +231,6 @@ describe("API URL based on environment", () => {
   // ... other tests ...
 });
 
-
-
-// Search Vendors:
-
-// You could write tests to ensure that the correct API URL is used based on the environment (development or production). This might be a bit trickier because it involves environment variables, but it's possible with Jest by using jest.doMock() or other similar methods.
 // Async Function Behavior:
 
 // Test the async function searchVendors to ensure it makes the correct fetch request and sets the state appropriately.
