@@ -92,6 +92,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",
     "http://127.0.0.0:8000",
+    "http://127.0.0.1:8000",
     "http://localhost:3001",
 ]
 
@@ -100,8 +101,16 @@ WSGI_APPLICATION = "core.wsgi.application"
 
 # Database
 
+POSTGRES_USER = env.str("POSTGRES_USER")
+POSTGRES_PASSWORD = env.str("POSTGRES_PASSWORD")
+POSTGRES_DB = env.str("POSTGRES_DB")
+POSTGRES_HOST = env.str("POSTGRES_HOST")
+
 DATABASES = {
-    "default": env.dj_db_url("DATABASE_URL", default="postgres://postgres@db/postgres")
+    "default": env.dj_db_url(
+        "DATABASE_URL",
+        default=f"postgres://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}/{POSTGRES_DB}",
+    )
 }
 
 
