@@ -34,6 +34,10 @@ class SupplierAdmin(admin.ModelAdmin):
         "contact_email",
         "website",
         "phone",
+        "accounting_email",
+        "accounting_contact",
+        "account_number",
+        "account_active",
     )
     search_fields = (
         "name",
@@ -41,6 +45,32 @@ class SupplierAdmin(admin.ModelAdmin):
         "contact_email",
         "website",
         "phone",
+        "accounting_email",
+        "accounting_contact",
+        "account_number",
+    )
+    fieldsets = (
+        (
+            None,
+            {"fields": ("name", "contact_name", "contact_email", "website", "phone")},
+        ),
+        ("Website Credentials", {"fields": ("website_username", "website_password")}),
+        (
+            "Order & Shipping Details",
+            {"fields": ("minimum_order_amount", "shipping_fees", "max_delivery_time")},
+        ),
+        (
+            "Accounting",
+            {
+                "fields": (
+                    "accounting_email",
+                    "accounting_contact",
+                    "account_number",
+                    "account_active",
+                )
+            },
+        ),
+        ("Other", {"fields": ("notes",)}),
     )
 
 
