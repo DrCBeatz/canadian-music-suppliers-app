@@ -28,6 +28,7 @@ class VendorAdmin(admin.ModelAdmin):
 
 
 class SupplierAdmin(admin.ModelAdmin):
+    change_form_template = 'frontend/admin/cmsa/supplier/change_form.html'
     list_display = (
         "name",
         "contact_name",
@@ -72,6 +73,17 @@ class SupplierAdmin(admin.ModelAdmin):
         ),
         ("Other", {"fields": ("notes",)}),
     )
+
+    def changeform_view(self, request, object_id=None, form_url="", extra_context=None):
+        extra_context = extra_context or {}
+        if object_id:
+            obj = self.model.objects.get(pk=object_id)
+            if obj.website_password:
+                # Decrypt the password and add it to the context
+                extra_context["original_website_password"] = obj.decrypt_password()
+        return super().changeform_view(
+            request, object_id, form_url, extra_context=extra_context
+        )
 
 
 class CategoryAdmin(admin.ModelAdmin):

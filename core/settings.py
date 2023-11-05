@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
-
+PASSWORD_ENCRYPTION_KEY = env("PASSWORD_ENCRYPTION_KEY")
 DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
 ALLOWED_HOSTS = [
