@@ -28,9 +28,7 @@ class Command(BaseCommand):
                     name=row["Supplier"],
                     defaults={
                         "website_username": row["website_username"],
-                        "website_password": Supplier.encrypt_password(
-                            row["website_password"]
-                        ),
+                        "website_password": row["website_password"],
                         "minimum_order_amount": row["minimum_order_amount"],
                         "notes": row["notes"],
                         "shipping_fees": row["shipping_fees"],
