@@ -1,4 +1,5 @@
-// import { defineConfig } from "vite";
+// frontend/vendor-search/vite.config.ts
+
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
