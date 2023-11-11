@@ -12,6 +12,10 @@ jobs:
     env:
       DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
       PASSWORD_ENCRYPTION_KEY: ${{ secrets.PASSWORD_ENCRYPTION_KEY }}
+      POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+      POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
 
     steps:
       - uses: actions/checkout@v2
@@ -24,8 +28,16 @@ jobs:
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          restore-keys: ${{ runner.os }}-buildx-
+
+      - name: Create .env file
+        run: |
+          echo "DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}" >> .env
+          echo "PASSWORD_ENCRYPTION_KEY=${{ secrets.PASSWORD_ENCRYPTION_KEY }}" >> .env
+          echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+          echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+          echo "POSTGRES_DB=${{ secrets.POSTGRES_DB }}" >> .env
+          echo "POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}" >> .env
 
       - name: Build Docker image
         uses: docker/build-push-action@v2
@@ -38,14 +50,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-new
 
       - name: Start Docker Compose services
-        run: |
-          export POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-          export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-          export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-          export POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
-          export DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
-          export PASSWORD_ENCRYPTION_KEY=${{ secrets.PASSWORD_ENCRYPTION_KEY }}
-          docker-compose up -d
+        run: docker-compose up -d
 
       - name: Install Node.js
         uses: actions/setup-node@v2
@@ -57,15 +62,7 @@ jobs:
         working-directory: ./frontend/vendor-search
 
       - name: Run backend tests
-        run: |
-          docker-compose run \
-            -e POSTGRES_USER="${{ secrets.POSTGRES_USER }}" \
-            -e POSTGRES_PASSWORD="${{ secrets.POSTGRES_PASSWORD }}" \
-            -e POSTGRES_DB="${{ secrets.POSTGRES_DB }}" \
-            -e POSTGRES_HOST="${{ secrets.POSTGRES_HOST }}" \
-            -e DJANGO_SECRET_KEY="${{ secrets.DJANGO_SECRET_KEY }}" \
-            -e PASSWORD_ENCRYPTION_KEY="${{ secrets.PASSWORD_ENCRYPTION_KEY }}" \
-            web pytest
+        run: docker-compose run web pytest
 
       - name: Run frontend tests
         run: npm test
