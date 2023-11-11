@@ -43,6 +43,8 @@ jobs:
           export POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
           export POSTGRES_DB=${{ secrets.POSTGRES_DB }}
           export POSTGRES_HOST=${{ secrets.POSTGRES_HOST }}
+          export DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
+          export PASSWORD_ENCRYPTION_KEY=${{ secrets.PASSWORD_ENCRYPTION_KEY }}
           docker-compose up -d
 
       - name: Install Node.js
