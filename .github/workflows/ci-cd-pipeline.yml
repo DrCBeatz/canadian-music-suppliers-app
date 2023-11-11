@@ -16,6 +16,8 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
       POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      DJANGO_DEBUG: "True"
+      DJANGO_SECURE_SSL_REDIRECT: "False"
 
     steps:
       - uses: actions/checkout@v2
