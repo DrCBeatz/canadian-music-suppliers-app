@@ -1,7 +1,13 @@
 # cmsa/admin.py
 
 from django.contrib import admin
-from .models import Vendor, Supplier, Category
+from django.utils.html import format_html
+from .models import Vendor, Supplier, Category, Contact
+
+
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "role", "primary_contact")
+    search_fields = ("name", "email", "role")
 
 
 class VendorSupplierInline(admin.TabularInline):
@@ -49,29 +55,38 @@ class SupplierAdmin(admin.ModelAdmin):
         "accounting_contact",
         "account_number",
     )
+    readonly_fields = ["display_contacts"]
     fieldsets = (
         (
             None,
-            {"fields": ("name", "contact_name", "contact_email", "website", "phone")},
-        ),
-        ("Website Credentials", {"fields": ("website_username", "website_password")}),
-        (
-            "Order & Shipping Details",
-            {"fields": ("minimum_order_amount", "shipping_fees", "max_delivery_time")},
-        ),
-        (
-            "Accounting",
             {
                 "fields": (
-                    "accounting_email",
-                    "accounting_contact",
-                    "account_number",
-                    "account_active",
+                    "name",
+                    "contact_name",
+                    "contact_email",
+                    "website",
+                    "phone",
+                    "contacts",
+                    "display_contacts",  # Include this in the fieldsets
                 )
             },
         ),
-        ("Other", {"fields": ("notes",)}),
+        # ... other fieldsets ...
     )
+    filter_horizontal = ("contacts",)
+
+    def display_contacts(self, obj):
+        contacts_html = ""
+        for contact in obj.contacts.all():
+            contacts_html += format_html(
+                "<div><strong>Name:</strong> {} <strong>Email:</strong> {} <strong>Primary:</strong> {}</div>",
+                contact.name,
+                contact.email,
+                "Yes" if contact.primary_contact else "No",
+            )
+        return format_html(contacts_html)
+
+    display_contacts.short_description = "Contacts"
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -79,6 +94,7 @@ class CategoryAdmin(admin.ModelAdmin):
     search_fields = ("name",)
 
 
+admin.site.register(Contact, ContactAdmin)
 admin.site.register(Vendor, VendorAdmin)
 admin.site.register(Supplier, SupplierAdmin)
 admin.site.register(Category, CategoryAdmin)

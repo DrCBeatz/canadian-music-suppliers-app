@@ -5,8 +5,27 @@ from django.conf import settings
 from django.db import models
 
 
+class Contact(models.Model):
+    name = models.CharField(max_length=200)
+    email = models.EmailField(null=True, blank=True)
+    role = models.CharField(max_length=400, null=True, blank=True)
+    primary_contact = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):
+        # Ensure only one primary contact per supplier
+        if self.primary_contact:
+            Contact.objects.filter(
+                primary_contact=True, supplier__contacts=self
+            ).update(primary_contact=False)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
 class Supplier(models.Model):
     name = models.CharField(max_length=200)
+    contacts = models.ManyToManyField(Contact, blank=True)
     contact_name = models.CharField(max_length=200, null=True, blank=True)
     contact_email = models.CharField(max_length=200, null=True, blank=True)
     website = models.CharField(max_length=255, null=True, blank=True)
@@ -38,7 +57,7 @@ class Supplier(models.Model):
         cipher_suite = Fernet(settings.PASSWORD_ENCRYPTION_KEY)
         decrypted_text = cipher_suite.decrypt(self.website_password.encode())
         return decrypted_text.decode()
-        
+
     def __str__(self):
         return self.name
 
