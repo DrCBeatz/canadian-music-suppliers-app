@@ -78,10 +78,14 @@ class SupplierAdmin(admin.ModelAdmin):
     def display_contacts(self, obj):
         contacts_html = ""
         for contact in obj.contacts.all():
+            role_display = (
+                contact.role if contact.role else "N/A"
+            )  # Display "N/A" if role is empty
             contacts_html += format_html(
-                "<div><strong>Name:</strong> {} <strong>Email:</strong> {} <strong>Primary:</strong> {}</div>",
+                "<div><strong>Name:</strong> {} <strong>Email:</strong> {} <strong>Role:</strong> {} <strong>Primary Contact:</strong> {}</div>",
                 contact.name,
                 contact.email,
+                role_display,
                 "Yes" if contact.primary_contact else "No",
             )
         return format_html(contacts_html)
