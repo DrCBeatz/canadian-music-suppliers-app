@@ -142,10 +142,6 @@ def test_primary_contact_logic():
     assert contact2.primary_contact is True
 
 
-import pytest
-from cmsa.models import Supplier, Contact
-
-
 @pytest.mark.django_db
 def test_multiple_primary_contacts():
     supplier = Supplier.objects.create(name="Supplier X")
@@ -164,5 +160,88 @@ def test_multiple_primary_contacts():
     # Check that only one of them remains the primary contact
     assert contact1.primary_contact != contact2.primary_contact
     # Assuming the logic sets the last added contact as primary
+    assert contact1.primary_contact is False
+    assert contact2.primary_contact is True
+
+
+@pytest.mark.django_db
+def test_remove_contact_from_supplier():
+    # Create a supplier
+    supplier = Supplier.objects.create(name="Supplier Y")
+
+    # Create multiple contacts
+    contact1 = Contact.objects.create(name="Contact 1", primary_contact=True)
+    contact2 = Contact.objects.create(name="Contact 2", primary_contact=False)
+    contact3 = Contact.objects.create(name="Contact 3", primary_contact=False)
+
+    # Add contacts to supplier
+    supplier.contacts.add(contact1, contact2, contact3)
+
+    # Verify that all contacts are added
+    assert supplier.contacts.count() == 3
+
+    # Remove one contact
+    supplier.contacts.remove(contact2)
+
+    # Refresh from DB to get updated values
+    supplier.refresh_from_db()
+
+    # Verify that the correct contacts remain
+    remaining_contacts = supplier.contacts.all()
+    assert contact2 not in remaining_contacts
+    assert contact1 in remaining_contacts
+    assert contact3 in remaining_contacts
+    assert supplier.contacts.count() == 2
+
+
+@pytest.mark.django_db
+def test_delete_contact_from_supplier():
+    # Create a supplier
+    supplier = Supplier.objects.create(name="Supplier Z")
+
+    # Create a contact and associate it with the supplier
+    contact = Contact.objects.create(name="Contact Z", primary_contact=True)
+    supplier.contacts.add(contact)
+
+    # Verify that the contact is added
+    assert supplier.contacts.count() == 1
+    assert supplier.contacts.filter(id=contact.id).exists()
+
+    # Delete the contact
+    contact.delete()
+
+    # Refresh supplier from DB to get updated values
+    supplier.refresh_from_db()
+
+    # Verify that the supplier no longer has this contact
+    assert supplier.contacts.count() == 0
+    assert not supplier.contacts.filter(id=contact.id).exists()
+
+
+@pytest.mark.django_db
+def test_primary_contact_update_logic():
+    # Create a supplier
+    supplier = Supplier.objects.create(name="Supplier for Primary Contact Test")
+
+    # Create two contacts and mark the first one as primary
+    contact1 = Contact.objects.create(name="Primary Contact 1", primary_contact=True)
+    contact2 = Contact.objects.create(name="Primary Contact 2", primary_contact=False)
+
+    # Add both contacts to the supplier
+    supplier.contacts.add(contact1, contact2)
+
+    # Initially, only contact1 should be primary
+    assert contact1.primary_contact is True
+    assert contact2.primary_contact is False
+
+    # Now, update contact2 to be primary
+    contact2.primary_contact = True
+    contact2.save()
+
+    # Refresh from DB to get updated values
+    contact1.refresh_from_db()
+    contact2.refresh_from_db()
+
+    # Verify that contact1 is no longer primary, but contact2 is
     assert contact1.primary_contact is False
     assert contact2.primary_contact is True
