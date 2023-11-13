@@ -71,7 +71,6 @@ class SupplierAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        # ... other fieldsets ...
     )
     filter_horizontal = ("contacts",)
 

@@ -1,7 +1,7 @@
 # cmsa/tests/test_models.py
 
 import pytest
-from cmsa.models import Vendor, Supplier, Category
+from cmsa.models import Vendor, Supplier, Category, Contact
 
 
 @pytest.mark.django_db
@@ -100,3 +100,69 @@ def test_password_stays_encrypted_on_retrieve():
 
     decrypted_password = retrieved_supplier.decrypt_password()
     assert decrypted_password == plaintext_password
+
+
+@pytest.mark.django_db
+def test_create_contact():
+    contact = Contact.objects.create(
+        name="Jane Doe", email="jane@example.com", role="Manager", primary_contact=True
+    )
+    assert contact.name == "Jane Doe"
+    assert contact.email == "jane@example.com"
+    assert contact.role == "Manager"
+    assert contact.primary_contact is True
+
+
+@pytest.mark.django_db
+def test_link_contact_to_supplier():
+    supplier = Supplier.objects.create(name="Supplier A")
+    contact = Contact.objects.create(
+        name="Contact 1", email="contact1@example.com", primary_contact=True
+    )
+    supplier.contacts.add(contact)
+
+    assert supplier.contacts.count() == 1
+    assert supplier.contacts.first() == contact
+
+
+@pytest.mark.django_db
+def test_primary_contact_logic():
+    supplier = Supplier.objects.create(name="Supplier B")
+    contact1 = Contact.objects.create(name="Contact 1", primary_contact=True)
+    contact2 = Contact.objects.create(name="Contact 2", primary_contact=True)
+
+    supplier.contacts.add(contact1, contact2)
+    supplier.save()
+
+    contact1.refresh_from_db()
+    contact2.refresh_from_db()
+
+    # Assuming the logic is such that the last added contact becomes the primary contact
+    assert contact1.primary_contact is False
+    assert contact2.primary_contact is True
+
+
+import pytest
+from cmsa.models import Supplier, Contact
+
+
+@pytest.mark.django_db
+def test_multiple_primary_contacts():
+    supplier = Supplier.objects.create(name="Supplier X")
+
+    # Create two contacts and mark both as primary
+    contact1 = Contact.objects.create(name="Contact 1", primary_contact=True)
+    contact2 = Contact.objects.create(name="Contact 2", primary_contact=True)
+
+    # Add contacts to supplier
+    supplier.contacts.add(contact1, contact2)
+
+    # Refresh from DB to get updated values
+    contact1.refresh_from_db()
+    contact2.refresh_from_db()
+
+    # Check that only one of them remains the primary contact
+    assert contact1.primary_contact != contact2.primary_contact
+    # Assuming the logic sets the last added contact as primary
+    assert contact1.primary_contact is False
+    assert contact2.primary_contact is True
