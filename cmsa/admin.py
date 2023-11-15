@@ -36,13 +36,8 @@ class VendorAdmin(admin.ModelAdmin):
 class SupplierAdmin(admin.ModelAdmin):
     list_display = (
         "name",
-        "contact_name",
-        "contact_email",
         "website",
         "phone",
-        "accounting_email",
-        "accounting_contact",
-        "account_number",
         "account_active",
     )
     search_fields = (
@@ -68,6 +63,16 @@ class SupplierAdmin(admin.ModelAdmin):
                     "phone",
                     "contacts",
                     "display_contacts",  # Include this in the fieldsets
+                    "website_username",
+                    "website_password",
+                    "minimum_order_amount",
+                    "notes",
+                    "shipping_fees",
+                    "max_delivery_time",
+                    "accounting_email",
+                    "accounting_contact",
+                    "account_number",
+                    "account_active",
                 )
             },
         ),
