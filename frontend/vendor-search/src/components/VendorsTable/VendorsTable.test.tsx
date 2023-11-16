@@ -10,8 +10,8 @@ const mockVendors: Vendor[] = [
     suppliers: [
       {
         name: "Supplier A1",
-        contact_name: "John Doe",
-        contact_email: "john@example.com",
+        primary_contact_name: "John Doe",
+        primary_contact_email: "john@example.com",
         website: "http://example.com",
         phone: "123-456-7890",
       },

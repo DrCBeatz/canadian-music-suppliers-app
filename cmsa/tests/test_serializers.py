@@ -1,26 +1,26 @@
 # cmsa/tests/test_serializers.py
 
 import pytest
-from cmsa.models import Supplier, Category, Vendor
+from cmsa.models import Supplier, Category, Vendor, Contact
 from cmsa.serializers import SupplierSerializer, CategorySerializer, VendorSerializer
 
 
 @pytest.mark.django_db
 def test_valid_supplier_serializer():
-    supplier = Supplier(
-        name="Test Supplier",
-        contact_name="John Doe",
-        contact_email="johndoe@example.com",
-        website="https://example.com",
-        phone="123-456-7890",
+    supplier = Supplier.objects.create(
+        name="Test Supplier", website="https://example.com", phone="123-456-7890"
     )
+    contact = Contact.objects.create(
+        name="John Doe", email="johndoe@example.com", primary_contact=True
+    )
+    supplier.contacts.add(contact)
     serializer = SupplierSerializer(supplier)
 
     data = serializer.data
 
     assert data["name"] == "Test Supplier"
-    assert data["contact_name"] == "John Doe"
-    assert data["contact_email"] == "johndoe@example.com"
+    assert data["primary_contact_name"] == "John Doe"
+    assert data["primary_contact_email"] == "johndoe@example.com"
     assert data["website"] == "https://example.com"
     assert data["phone"] == "123-456-7890"
 

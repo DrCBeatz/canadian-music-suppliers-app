@@ -9,8 +9,8 @@ export interface Vendor {
   name: string;
   suppliers: {
     name: string;
-    contact_name?: string;
-    contact_email?: string;
+    primary_contact_name?: string;
+    primary_contact_email?: string;
     website?: string;
     phone?: string;
   }[];
@@ -54,8 +54,8 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
                 {vendor.suppliers.flatMap((supplier, index, array) => {
                   const elements = [];
                   if (
-                    supplier.contact_name ||
-                    supplier.contact_email ||
+                    supplier.primary_contact_name ||
+                    supplier.primary_contact_email ||
                     supplier.website ||
                     supplier.phone
                   ) {
@@ -110,10 +110,11 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
       >
         <h2 className="vendors-table__modal-header">{currentSupplier?.name}</h2>
         <p>
-          <strong>Contact Name:</strong> {currentSupplier?.contact_name}
+          <strong>Contact Name:</strong> {currentSupplier?.primary_contact_name}
         </p>
         <p>
-          <strong>Contact Email:</strong> {currentSupplier?.contact_email}
+          <strong>Contact Email:</strong>{" "}
+          {currentSupplier?.primary_contact_email}
         </p>
         <p>
           <strong>Website: </strong>

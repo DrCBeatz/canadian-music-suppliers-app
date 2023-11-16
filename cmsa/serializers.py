@@ -5,16 +5,29 @@ from .models import Vendor, Supplier, Category
 
 
 class SupplierSerializer(serializers.ModelSerializer):
+    primary_contact_name = serializers.SerializerMethodField()
+    primary_contact_email = serializers.SerializerMethodField()
+
     class Meta:
         model = Supplier
         fields = [
             "id",
             "name",
-            "contact_name",
-            "contact_email",
+            # "contact_name",
+            # "contact_email",
+            "primary_contact_name",
+            "primary_contact_email",
             "website",
             "phone",
         ]
+
+    def get_primary_contact_name(self, obj):
+        primary_contact = obj.contacts.filter(primary_contact=True).first()
+        return primary_contact.name if primary_contact else None
+
+    def get_primary_contact_email(self, obj):
+        primary_contact = obj.contacts.filter(primary_contact=True).first()
+        return primary_contact.email if primary_contact else None
 
 
 class CategorySerializer(serializers.ModelSerializer):
