@@ -6,21 +6,17 @@ import AppHeader from "../AppHeader/AppHeader";
 import SearchForm from "../SearchForm/SearchForm";
 import VendorsTable, { Vendor } from "../VendorsTable/VendorsTable";
 
-function getApiUrl() {
-  return process.env.NODE_ENV === "development"
-    ? "http://localhost:8000"
-    : "https://secure-falls-59693-7d816c7f067e.herokuapp.com";
+interface VendorSearchProps {
+  apiUrl?: string;
 }
-
-const VendorSearch: React.FC = () => {
+const VendorSearch: React.FC<VendorSearchProps> = ({ apiUrl }) => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
+  const baseApiUrl = apiUrl || import.meta.env.VITE_API_BASE_URL;
 
   const searchVendors = async (searchTerm: string): Promise<void> => {
-    const apiUrl = getApiUrl();
-
     try {
       const response = await fetch(
-        `${apiUrl}/routes/vendors/?search=${searchTerm}`
+        `${baseApiUrl}/routes/vendors/?search=${searchTerm}`
       );
 
       if (!response.ok) {

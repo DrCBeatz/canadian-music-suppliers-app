@@ -33,6 +33,13 @@ describe("VendorSearch", () => {
     };
   };
   beforeEach(() => {
+    // Mock environment variable for tests
+    vi.mock("import.meta", () => ({
+      env: {
+        VITE_API_BASE_URL: "http://localhost:8000",
+      },
+    }));
+
     // Clear all mocks before each test
     vi.clearAllMocks();
 
@@ -230,55 +237,6 @@ describe("VendorSearch", () => {
     // Check that the state has been set based on the mock fetch response
     expect(screen.getByText("Vendor A")).toBeInTheDocument();
   });
-});
-
-describe("API URL based on environment", () => {
-  afterEach(() => {
-    // Restore all environment variables after each test.
-    vi.unstubAllEnvs();
-  });
-
-  test("uses development API URL in development mode", async () => {
-    vi.stubEnv("NODE_ENV", "development");
-
-    // Render the component AFTER setting the environment variable.
-    render(<VendorSearch />);
-
-    const searchInput = screen.getByRole("searchbox");
-    fireEvent.change(searchInput, { target: { value: "test" } });
-    const form = searchInput.closest("form");
-    if (form) {
-      fireEvent.submit(form);
-    }
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining("http://localhost:8000/routes/vendors/")
-      );
-    });
-  });
-
-  test("uses production API URL in production mode", async () => {
-    vi.stubEnv("NODE_ENV", "production");
-
-    // Render the component AFTER setting the environment variable.
-    render(<VendorSearch />);
-
-    const searchInput = screen.getByRole("searchbox");
-    fireEvent.change(searchInput, { target: { value: "test" } });
-    const form = searchInput.closest("form");
-    if (form) {
-      fireEvent.submit(form);
-    }
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining(
-          "https://secure-falls-59693-7d816c7f067e.herokuapp.com/routes/vendors/"
-        )
-      );
-    });
-  });
 
   test("searchVendors logs an error on invalid fetch response status", async () => {
     (fetch as FetchMock).mockResolvedValueOnce({
@@ -307,5 +265,34 @@ describe("API URL based on environment", () => {
     });
 
     consoleSpy.mockRestore();
+  });
+
+  const mockApiUrl = "http://mocked-api-url.com";
+
+  test("uses provided API URL when passed as a prop", async () => {
+    // Mock fetch to track calls
+    global.fetch = vi.fn().mockImplementation((url) => {
+      return Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve([]),
+        url, // Track the URL used in the fetch call
+      });
+    }) as FetchMockType;
+
+    // Render the component with a mocked API URL
+    render(<VendorSearch apiUrl={mockApiUrl} />);
+
+    // Simulate a search action to trigger the fetch call
+    const searchInput = screen.getByRole("searchbox");
+    fireEvent.change(searchInput, { target: { value: "test" } });
+    const form = searchInput.closest("form");
+    if (form) {
+      fireEvent.submit(form);
+    }
+
+    // Wait for fetch to be called and then verify the URL
+    await waitFor(() => {
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining(mockApiUrl));
+    });
   });
 });
