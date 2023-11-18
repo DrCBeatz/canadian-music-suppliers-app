@@ -3,6 +3,7 @@
 import pytest
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+from datetime import timedelta
 
 
 @pytest.fixture
@@ -54,3 +55,36 @@ def test_invalid_token_refresh(client, create_test_user):
     response = client.post(url, data)
 
     assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_token_obtain_invalid_credentials(client, create_test_user):
+    url = "/api/token/"
+    invalid_data = {
+        "username": "testuser",
+        "password": "wrongpassword",
+    }
+    response = client.post(url, invalid_data)
+
+    assert response.status_code == 401
+    assert "access" not in response.json()
+    assert "refresh" not in response.json()
+
+
+@pytest.mark.django_db
+def test_expired_token_refresh(client, create_test_user):
+    user = create_test_user
+
+    # Obtain a refresh token
+    refresh = RefreshToken.for_user(user)
+
+    # Set the expiration to the past
+    refresh.set_exp(lifetime=timedelta(days=-1))  # Negative timedelta
+
+    # Test the token refresh endpoint
+    url = "/api/token/refresh/"
+    data = {"refresh": str(refresh)}
+    response = client.post(url, data)
+
+    assert response.status_code == 401
+    assert "access" not in response.json()
