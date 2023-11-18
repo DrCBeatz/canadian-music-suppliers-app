@@ -13,8 +13,6 @@ class SupplierSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
-            # "contact_name",
-            # "contact_email",
             "primary_contact_name",
             "primary_contact_email",
             "website",
