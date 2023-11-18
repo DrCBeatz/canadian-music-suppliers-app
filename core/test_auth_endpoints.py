@@ -88,3 +88,22 @@ def test_expired_token_refresh(client, create_test_user):
 
     assert response.status_code == 401
     assert "access" not in response.json()
+
+
+@pytest.mark.django_db
+def test_token_obtain_inactive_user(client, db):
+    User = get_user_model()
+    inactiave_user = User.objects.create_user(
+        username="inactiveuser", password="12345", is_active=False
+    )
+
+    url = "/api/token/"
+    data = {
+        "username": "inactiveuser",
+        "password": "12345",
+    }
+    response = client.post(url, data)
+
+    assert response.status_code == 401
+    assert "access" not in response.json()
+    assert "refresh" not in response.json()
