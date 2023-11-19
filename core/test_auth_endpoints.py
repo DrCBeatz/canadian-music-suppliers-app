@@ -2,8 +2,10 @@
 
 import pytest
 from django.contrib.auth import get_user_model
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from datetime import timedelta
+import jwt
+from django.conf import settings
 
 
 @pytest.fixture
@@ -107,3 +109,15 @@ def test_token_obtain_inactive_user(client, db):
     assert response.status_code == 401
     assert "access" not in response.json()
     assert "refresh" not in response.json()
+
+
+@pytest.mark.django_db
+def test_valid_access_token(client, create_test_user):
+    user = create_test_user
+
+    access = AccessToken.for_user(user)
+
+    decoded_payload = jwt.decode(str(access), settings.SECRET_KEY, algorithms=["HS256"])
+
+    assert decoded_payload["user_id"] == user.id
+    assert decoded_payload["token_type"] == "access"
