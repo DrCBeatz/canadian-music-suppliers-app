@@ -16,7 +16,6 @@ describe("Navbar", () => {
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
 
-  // Test if the login button has a click event
   test("login button click works", () => {
     const mockClickHandler = vi.fn();
     render(<Navbar onLoginClick={mockClickHandler} />);
