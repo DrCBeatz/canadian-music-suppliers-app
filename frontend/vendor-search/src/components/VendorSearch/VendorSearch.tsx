@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import "./VendorSearch.css";
-import AppHeader from "../AppHeader/AppHeader";
 import SearchForm from "../SearchForm/SearchForm";
 import VendorsTable, { Vendor } from "../VendorsTable/VendorsTable";
 
@@ -36,7 +35,6 @@ const VendorSearch: React.FC<VendorSearchProps> = ({ apiUrl }) => {
 
   return (
     <div className="vendor-search">
-      <AppHeader />
       <SearchForm onSearch={searchVendors} />
       <VendorsTable vendors={vendors} />
     </div>

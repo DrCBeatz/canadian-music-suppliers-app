@@ -1,4 +1,5 @@
 // VendorSearch.test.tsx
+//
 import {
   render,
   screen,
@@ -56,7 +57,6 @@ describe("VendorSearch", () => {
     render(<VendorSearch />);
 
     // Expectations for initial render:
-    expect(screen.getByRole("banner")).toBeInTheDocument(); // This assumes AppHeader renders a <header> element (banner role)
     expect(screen.getByRole("searchbox")).toBeInTheDocument(); // This assumes SearchForm renders an input of type "search"
     expect(screen.getByRole("table")).toBeInTheDocument(); // This assumes VendorsTable renders a <table> element
 

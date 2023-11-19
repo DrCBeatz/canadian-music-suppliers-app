@@ -1,4 +1,8 @@
 /* SearchForm.css */
+
+.search-form {
+  margin-top: 2rem;
+}
 .search-form__input {
   padding: 0.5rem;
   border: 1px solid #ccc;
