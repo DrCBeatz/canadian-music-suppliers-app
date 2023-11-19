@@ -13,10 +13,19 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onRequestClose }) => {
   return (
     <Modal
       isOpen={isOpen}
+      closeTimeoutMS={300}
       onRequestClose={onRequestClose}
       contentLabel="Login Modal"
-      className="login-modal"
-      overlayClassName="login-modal__overlay"
+      className={{
+        base: "login-modal__content",
+        afterOpen: "login-modal__content--after-open",
+        beforeClose: "login-modal__content--before-close",
+      }}
+      overlayClassName={{
+        base: "login-modal__overlay",
+        afterOpen: "login-modal__overlay--after-open",
+        beforeClose: "login-modal__overlay--before-close",
+      }}
     >
       <h2>Login</h2>
       <form>
