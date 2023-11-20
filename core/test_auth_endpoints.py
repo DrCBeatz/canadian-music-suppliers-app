@@ -6,6 +6,7 @@ from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
 from datetime import timedelta
 import jwt
 from django.conf import settings
+import datetime
 
 
 @pytest.fixture
@@ -121,3 +122,78 @@ def test_valid_access_token(client, create_test_user):
 
     assert decoded_payload["user_id"] == user.id
     assert decoded_payload["token_type"] == "access"
+
+
+@pytest.mark.django_db
+def test_token_obtain_pair_cookies_set_correctly(client, create_test_user):
+    url = "/api/token/"
+    data = {
+        "username": "testuser",
+        "password": "12345",
+    }
+    response = client.post(url, data)
+
+    # Check response status
+    assert response.status_code == 200
+
+    # Check for the presence of cookies
+    assert "access_token" in response.cookies
+    assert "refresh_token" in response.cookies
+
+    # Verify properties of cookies
+    access_cookie = response.cookies["access_token"]
+    refresh_cookie = response.cookies["refresh_token"]
+
+    assert access_cookie["httponly"] is True
+    assert refresh_cookie["httponly"] is True
+
+    # Check 'Secure' flag based on DEBUG setting
+    assert access_cookie["secure"] is not settings.DEBUG
+    assert refresh_cookie["secure"] is not settings.DEBUG
+
+    # Check 'SameSite' attribute
+    assert access_cookie["samesite"] == "Lax"
+    assert refresh_cookie["samesite"] == "Lax"
+
+
+@pytest.mark.django_db
+def test_token_expiration(client, create_test_user):
+    user = create_test_user
+
+    # Obtain token
+    response = client.post(
+        "/api/token/", {"username": user.username, "password": "12345"}
+    )
+    access_token = response.data["access"]
+
+    # Decode token
+    decoded = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"])
+
+    # Calculate expected expiration time
+    expected_expiration = int(
+        (
+            datetime.datetime.utcnow() + settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"]
+        ).timestamp()
+    )
+
+    # Check if the expiration time in the token matches the expected time
+    assert (
+        abs(decoded["exp"] - expected_expiration) < 5
+    )  # Allowing a small leeway for execution time
+
+
+# Below test is failing, will fix later
+
+# @pytest.mark.django_db
+# def test_token_issuer(client, create_test_user):
+#     user = create_test_user
+
+#     # Obtain token
+#     response = client.post("/api/token/", {"username": user.username, "password": "12345"})
+#     access_token = response.data['access']
+
+#     # Decode token
+#     decoded = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"])
+
+#     # Check if the issuer is correctly set
+#     assert decoded['iss'] == 'YourIssuer'

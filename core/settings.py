@@ -84,7 +84,8 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
-    # Other settings can be customized as per requirement
+    "ACCESS_TOKEN_CLASS": "accounts.tokens.CustomAccessToken",
+    "REFRESH_TOKEN_CLASS": "accounts.tokens.CustomRefreshToken",
 }
 
 LOGGING = {
@@ -105,14 +106,23 @@ LOGGING = {
 }
 
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3001",
+    "http://localhost:5173",
+    # "http://localhost:3001",
     "http://127.0.0.0:8000",
     "http://127.0.0.1:8000",
-    "http://localhost:3001",
+    # "http://localhost:3001",
 ]
+
+
+CORS_ORIGIN_WHITELIST = [
+    # "http://localhost:3000",
+    "http://localhost:5173",
+]
+
 
 WSGI_APPLICATION = "core.wsgi.application"
 

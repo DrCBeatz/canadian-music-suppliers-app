@@ -7,9 +7,10 @@ import "./LoginModal.css";
 type LoginModalProps = {
   isOpen: boolean;
   onRequestClose: () => void;
+  onLoginSuccess: () => void;
 };
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onRequestClose }) => {
+const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onRequestClose, onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
@@ -27,8 +28,11 @@ const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onRequestClose }) => {
         body: JSON.stringify({ username, password }),
       });
 
-      if (!response.ok) {
-        throw new Error("Login failed");
+        if (response.ok) {
+            onLoginSuccess();
+        }
+       else {
+        console.error("Login error");
       }
 
       const data = await response.json();
