@@ -5,20 +5,20 @@ import Navbar from "./Navbar";
 
 describe("Navbar", () => {
   test("renders Navbar component", () => {
-    render(<Navbar />);
+    render(<Navbar isUserLoggedIn={false} />);
     expect(
       screen.getByText("Canada Music Suppliers & Vendors")
     ).toBeInTheDocument();
   });
 
   test("contains login button", () => {
-    render(<Navbar />);
+    render(<Navbar isUserLoggedIn={false} />);
     expect(screen.getByRole("button", { name: /login/i })).toBeInTheDocument();
   });
 
   test("login button click works", () => {
     const mockClickHandler = vi.fn();
-    render(<Navbar onLoginClick={mockClickHandler} />);
+    render(<Navbar isUserLoggedIn={false} onLoginClick={mockClickHandler} />);
     const loginButton = screen.getByRole("button", { name: /login/i });
     fireEvent.click(loginButton);
     expect(mockClickHandler).toHaveBeenCalled();
