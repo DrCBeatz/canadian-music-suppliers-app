@@ -7,6 +7,9 @@ from datetime import timedelta
 import jwt
 from django.conf import settings
 import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
@@ -182,18 +185,26 @@ def test_token_expiration(client, create_test_user):
     )  # Allowing a small leeway for execution time
 
 
-# Below test is failing, will fix later
+@pytest.mark.django_db
+def test_token_issuer(client, create_test_user):
+    logger.debug("Testing token issuer")
+    user = create_test_user
 
-# @pytest.mark.django_db
-# def test_token_issuer(client, create_test_user):
-#     user = create_test_user
+    # Obtain token
+    response = client.post(
+        "/api/token/", {"username": user.username, "password": "12345"}
+    )
+    access_token = response.data["access"]
 
-#     # Obtain token
-#     response = client.post("/api/token/", {"username": user.username, "password": "12345"})
-#     access_token = response.data['access']
+    logger.debug("Access token received: %s", access_token)
 
-#     # Decode token
-#     decoded = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"])
+    # Decode token
+    try:
+        decoded = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"])
+        logger.debug("Decoded token: %s", decoded)
+    except Exception as e:
+        logger.error("Error decoding token: %s", e)
+        raise
 
-#     # Check if the issuer is correctly set
-#     assert decoded['iss'] == 'YourIssuer'
+    # Check if the issuer is correctly set
+    assert decoded["iss"] == "YourIssuer"

@@ -97,9 +97,18 @@ LOGGING = {
         },
     },
     "loggers": {
-        "django.template": {
+        "django": {
             "handlers": ["console"],
-            "level": "DEBUG",
+            "level": "ERROR",
+        },
+        "core": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "accounts": {
+            "handlers": ["console"],
+            "level": "ERROR",
             "propagate": False,
         },
     },
@@ -114,6 +123,7 @@ CORS_ALLOWED_ORIGINS = [
     # "http://localhost:3001",
     "http://127.0.0.0:8000",
     "http://127.0.0.1:8000",
+    "http://localhost:8000",
     # "http://localhost:3001",
 ]
 
@@ -121,6 +131,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ORIGIN_WHITELIST = [
     # "http://localhost:3000",
     "http://localhost:5173",
+    "http://localhost:8000",
 ]
 
 
