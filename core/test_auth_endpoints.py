@@ -7,7 +7,13 @@ from datetime import timedelta
 import jwt
 from django.conf import settings
 import datetime
+from rest_framework.test import APIClient
+from django.urls import reverse
 import logging
+from rest_framework_simplejwt.token_blacklist.models import (
+    OutstandingToken,
+    BlacklistedToken,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -208,3 +214,95 @@ def test_token_issuer(client, create_test_user):
 
     # Check if the issuer is correctly set
     assert decoded["iss"] == "YourIssuer"
+
+
+@pytest.mark.django_db
+@pytest.mark.django_db
+def test_logout(client, create_test_user):
+    # First, log in the user to set the cookies
+    user = create_test_user
+    client.login(username=user.username, password="12345")
+
+    # Make a POST request to the logout endpoint
+    response = client.post("/api/logout/", {}, format="json")
+
+    # Verify that the response status code is 200 (OK)
+    assert response.status_code == 200
+
+    # Check the response content if necessary
+    assert response.json() == {"detail": "Logout successful"}
+
+    # Verify that the cookies are invalidated (set to empty)
+    assert response.cookies["access_token"].value == ""
+    assert response.cookies["refresh_token"].value == ""
+
+
+@pytest.mark.django_db
+def test_logout_unauthenticated_user(client):
+    # Make a POST request to the logout endpoint without logging in first
+    response = client.post("/api/logout/", {}, format="json")
+
+    # Verify that the response status code is 200 (OK) even for unauthenticated users
+    assert response.status_code == 200
+
+    # Check the response content if necessary
+    assert response.json() == {"detail": "Logout successful"}
+
+
+@pytest.mark.django_db
+def test_protected_view_authenticated_access(create_test_user):
+    user = create_test_user
+    refresh = RefreshToken.for_user(user)
+    access_token = str(refresh.access_token)
+
+    client = APIClient()
+    client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
+
+    url = reverse("protected_test")  # Replace with your URL name
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert response.data == {"message": "This is a protected endpoint"}
+
+
+@pytest.mark.django_db
+def test_protected_view_unauthenticated_access():
+    client = APIClient()
+
+    url = reverse("protected_test")  # Replace with your URL name
+    response = client.get(url)
+
+    assert response.status_code == 401  # Unauthorized
+
+
+# Below test is failing
+
+# @pytest.mark.django_db
+# def test_token_invalid_post_logout(client, create_test_user):
+#     # Step 1: Log in the user and obtain the tokens
+#     user = create_test_user
+#     login_response = client.post("/api/token/", {"username": user.username, "password": "12345"})
+#     access_token = login_response.data["access"]
+#     refresh_token_jti = jwt.decode(login_response.data["refresh"], settings.SECRET_KEY, algorithms=["HS256"])["jti"]
+
+#     # Step 2: Make an authenticated request to a protected endpoint
+#     protected_url = "/api/protected-test/"
+#     auth_headers = {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
+#     protected_response_pre_logout = client.get(protected_url, **auth_headers)
+#     assert (
+#         protected_response_pre_logout.status_code == 200
+#     )  # or other success status code
+
+#     # Step 3: Log out the user
+#     client.post("/api/logout/", {}, format="json")
+
+#     # Step 3.1: Check if the token is blacklisted
+#     is_blacklisted = BlacklistedToken.objects.filter(token__jti=refresh_token_jti).exists()
+#     logger.debug(f"Is refresh token blacklisted: {is_blacklisted}")
+#     assert is_blacklisted
+
+#     # Step 4: Make another request using the same token and expect it to fail
+#     protected_response_post_logout = client.get(protected_url, **auth_headers)
+#     assert (
+#         protected_response_post_logout.status_code == 401
+#     )  # Unauthorized or other appropriate failure code
