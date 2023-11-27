@@ -19,6 +19,7 @@ from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
 )
 import logging
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,8 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
         return response
 
-
+# added to temporarily 403 error when logging out in front end
+@csrf_exempt
 def logout_view(request):
     try:
         refresh_token = request.COOKIES.get("refresh_token")
