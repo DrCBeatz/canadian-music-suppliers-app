@@ -19,7 +19,15 @@ from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
 )
 import logging
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.http import HttpResponseNotAllowed
+from django.middleware.csrf import get_token
+from django.http import HttpResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.utils.decorators import method_decorator
+from rest_framework.views import APIView
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 
 logger = logging.getLogger(__name__)
 
@@ -34,15 +42,25 @@ class ProtectedTestView(APIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
+    @method_decorator(csrf_protect)
     def post(self, request, *args, **kwargs):
+        # Log the incoming request data
+        logger.debug(f"Incoming request data: {request.data}")
+
         serializer = self.serializer_class(data=request.data)
 
         try:
             serializer.is_valid(raise_exception=True)
         except TokenError as e:
+            # Log the exception
+            logger.error(f"Token error: {e.args[0]}")
             raise InvalidToken(e.args[0])
 
         data = serializer.validated_data
+
+        # Log the response data
+        logger.debug(f"Response data: {data}")
+
         response = Response(data, status=status.HTTP_200_OK)
 
         # Set JWT tokens in HttpOnly cookies
@@ -63,9 +81,21 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 
         return response
 
-# added to temporarily 403 error when logging out in front end
-@csrf_exempt
+
 def logout_view(request):
+    csrf_protect(request)
+    # Log the request method and any CSRF token in the request
+    logger.debug(f"Request method: {request.method}")
+    logger.debug(f"CSRF token from cookie: {request.COOKIES.get('csrftoken')}")
+
+    # Generate and log a CSRF token (for testing and comparison)
+    csrf_token_generated = get_token(request)
+    logger.debug(f"Generated CSRF token: {csrf_token_generated}")
+
+    # Ensure the request is a POST request
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
     try:
         refresh_token = request.COOKIES.get("refresh_token")
         logger.debug(f"Attempting logout with Refresh Token: {refresh_token}")
@@ -87,3 +117,9 @@ def logout_view(request):
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")
     return response
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class SetCsrfTokenView(APIView):
+    def get(self, request, *arts, **kwargs):
+        return HttpResponse("CSRF cookie set")

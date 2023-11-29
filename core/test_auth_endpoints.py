@@ -14,6 +14,7 @@ from rest_framework_simplejwt.token_blacklist.models import (
     OutstandingToken,
     BlacklistedToken,
 )
+from django.test import Client
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,11 @@ def create_test_user(db):
     User = get_user_model()
     user = User.objects.create_user(username="testuser", password="12345")
     return user
+
+
+@pytest.fixture
+def csrf_client():
+    return Client(enforce_csrf_checks=True)
 
 
 @pytest.mark.django_db
@@ -306,3 +312,97 @@ def test_protected_view_unauthenticated_access():
 #     assert (
 #         protected_response_post_logout.status_code == 401
 #     )  # Unauthorized or other appropriate failure code
+
+
+@pytest.mark.django_db
+def test_logout_with_post_request(client, create_test_user):
+    # Log in the user to set the cookies
+    user = create_test_user
+    client.login(username=user.username, password="12345")
+
+    # Make a POST request to the logout endpoint
+    response = client.post("/api/logout/", {}, format="json")
+
+    # Verify that the response status code is 200 (OK)
+    assert response.status_code == 200
+    assert response.json() == {"detail": "Logout successful"}
+
+    # Verify that the cookies are invalidated (set to empty)
+    assert response.cookies["access_token"].value == ""
+    assert response.cookies["refresh_token"].value == ""
+
+
+@pytest.mark.django_db
+def test_logout_method_not_allowed(client):
+    # Make a GET request to the logout endpoint
+    response = client.get("/api/logout/")
+
+    # Verify that the response status code is 405 (Method Not Allowed)
+    assert response.status_code == 405
+
+
+@pytest.mark.django_db
+def test_logout_with_csrf_token(client, create_test_user):
+    # Log in the user to set the cookies
+    user = create_test_user
+    client.login(username=user.username, password="12345")
+
+    # Retrieve and set CSRF token
+    client.get("/set-csrf/")
+    csrf_token = client.cookies["csrftoken"].value
+
+    # Make a POST request to the logout endpoint with CSRF token
+    response = client.post(
+        "/api/logout/", {}, format="json", HTTP_X_CSRFTOKEN=csrf_token
+    )
+
+    # Verify that the response status code is 200 (OK)
+    assert response.status_code == 200
+    assert response.json() == {"detail": "Logout successful"}
+
+
+@pytest.mark.django_db
+def test_logout_without_csrf_token(csrf_client, create_test_user):
+    # Log in the user to set the cookies
+    user = create_test_user
+    csrf_client.login(username=user.username, password="12345")
+
+    # Retrieve CSRF token but don't use it in the request
+    csrf_client.get("/set-csrf/")
+
+    # Make a POST request to the logout endpoint without CSRF token
+    response = csrf_client.post("/api/logout/", {}, format="json")
+
+    # Verify that the response status code is 403 (Forbidden)
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_login_view_csrf(create_test_user, db):
+    client = Client(enforce_csrf_checks=True)
+
+    # User created by the fixture
+    user = create_test_user
+
+    # Obtain CSRF token
+    client.get("/set-csrf/")
+    csrf_token = client.cookies["csrftoken"].value
+
+    # Test POST request without CSRF token
+    response_without_csrf = client.post(
+        "/api/token/", {"username": user.username, "password": "12345"}
+    )
+    assert response_without_csrf.status_code == 403
+
+    # Test POST request with CSRF token
+    response_with_csrf = client.post(
+        "/api/token/",
+        {
+            "username": user.username,
+            "password": "12345",
+            "csrfmiddlewaretoken": csrf_token,
+        },
+    )
+
+    print(response_with_csrf.content)  # Add this line to inspect the response content
+    assert response_with_csrf.status_code == 200
