@@ -21,23 +21,23 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-  
+
     const csrfToken = getCsrfToken();
     console.log("CSRF token:", csrfToken);
-  
+
     const apiUrl = import.meta.env.VITE_API_BASE_URL; // Accessing the API base URL from the .env file
-  
+
     try {
-      const response = await fetch(`${apiUrl}/api/token/`, {
+      const response = await fetch(`${apiUrl}/api/login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": csrfToken, // Include CSRF token in the request headers
         },
-        credentials: 'include', // Include credentials such as cookies in the request
+        credentials: "include", // Include credentials such as cookies in the request
         body: JSON.stringify({ username, password }),
       });
-  
+
       if (response.ok) {
         const data = await response.json();
         console.log(data);

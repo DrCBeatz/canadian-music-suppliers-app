@@ -25,18 +25,26 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     try {
       const csrfToken = getCsrfToken();
+      console.log("CSRF Token during logout:", csrfToken); // Log the CSRF token
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
-      await fetch(`${apiUrl}/api/logout/`, {
+      const response = await fetch(`${apiUrl}/api/logout/`, {
         method: "POST",
-        credentials: "include", // To include cookies in the request
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken, // Include the CSRF token in the request
+          "X-CSRFToken": csrfToken,
         },
       });
-      setIsUserLoggedIn(false);
-      console.log("Logout successful");
+      if (response.ok) {
+        setIsUserLoggedIn(false);
+        console.log("Logout successful");
+      } else {
+        console.error(
+          "Logout failed: Server responded with status",
+          response.status
+        );
+      }
     } catch (error) {
       console.error("Logout failed:", error);
     }

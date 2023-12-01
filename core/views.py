@@ -4,20 +4,11 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
-from rest_framework_simplejwt.exceptions import (
-    InvalidToken,
-    TokenError,
-)
-from .serializers import CustomTokenObtainPairSerializer
+import pytest
 from django.http import JsonResponse
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.token_blacklist.models import (
-    OutstandingToken,
-    BlacklistedToken,
-)
+
 import logging
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.http import HttpResponseNotAllowed
@@ -28,8 +19,39 @@ from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
+from django.contrib.auth import authenticate, login
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.contrib.auth import logout
+
 
 logger = logging.getLogger(__name__)
+
+
+@api_view(["POST"])
+@csrf_protect
+def login_view(request):
+    logger.debug(f"Request Data: {request.data}")
+    logger.debug(f"Request Headers: {request.headers}")
+
+    # Existing code for username, password retrieval and authentication
+    username = request.data.get("username")
+    password = request.data.get("password")
+    user = authenticate(request, username=username, password=password)
+
+    csrf_token = request.META.get("CSRF_COOKIE")
+    logger.debug(f"CSRF Token from request: {csrf_token}")
+
+    if user is not None:
+        login(request, user)
+        logger.debug(f"User {username} logged in successfully")
+        return Response({"detail": "Login successful"}, status=status.HTTP_200_OK)
+    else:
+        logger.warning(f"Login failed for user {username}")
+        return Response(
+            {"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED
+        )
 
 
 class ProtectedTestView(APIView):
@@ -48,87 +70,13 @@ class ProtectedTestView(APIView):
         return Response({"message": "This is a protected endpoint"})
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
-
-    @method_decorator(csrf_protect)
-    def post(self, request, *args, **kwargs):
-        # Log the incoming request data
-        logger.debug(f"Incoming request data: {request.data}")
-
-        serializer = self.serializer_class(data=request.data)
-
-        try:
-            serializer.is_valid(raise_exception=True)
-        except TokenError as e:
-            # Log the exception
-            logger.error(f"Token error: {e.args[0]}")
-            raise InvalidToken(e.args[0])
-
-        data = serializer.validated_data
-
-        # Log the response data
-        logger.debug(f"Response data: {data}")
-
-        response = Response(data, status=status.HTTP_200_OK)
-
-        # Set JWT tokens in HttpOnly cookies
-        response.set_cookie(
-            key="access_token",
-            value=data["access"],
-            httponly=True,
-            secure=not settings.DEBUG,  # Use settings.DEBUG
-            samesite="Lax",
-        )
-        response.set_cookie(
-            key="refresh_token",
-            value=data["refresh"],
-            httponly=True,
-            secure=not settings.DEBUG,  # Use settings.DEBUG
-            samesite="Lax",
-        )
-
-        return response
-
-
+@api_view(["POST"])
 def logout_view(request):
-    csrf_protect(request)
-    # Log the request method and any CSRF token in the request
-    logger.debug(f"Request method: {request.method}")
-    logger.debug(f"CSRF token from cookie: {request.COOKIES.get('csrftoken')}")
-
-    # Generate and log a CSRF token (for testing and comparison)
-    csrf_token_generated = get_token(request)
-    logger.debug(f"Generated CSRF token: {csrf_token_generated}")
-
-    # Ensure the request is a POST request
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
-
-    try:
-        refresh_token = request.COOKIES.get("refresh_token")
-        logger.debug(f"Attempting logout with Refresh Token: {refresh_token}")
-        token = RefreshToken(refresh_token)
-        logger.debug(f"Decoded Token: {token}")
-
-        outstanding_token = OutstandingToken.objects.filter(jti=token["jti"]).first()
-        if outstanding_token:
-            BlacklistedToken.objects.create(token=outstanding_token)
-            logger.debug(f"Token blacklisted: {outstanding_token}")
-        else:
-            logger.debug("No outstanding token found for blacklisting")
-        
-        blacklisted_tokens = BlacklistedToken.objects.all()
-        logger.debug(f"Current Blacklisted Tokens: {[token.token.jti for token in blacklisted_tokens]}")
-
-    except Exception as e:
-        logger.error(f"Error during logout: {e}")
-        raise e
-
-    response = JsonResponse({"detail": "Logout successful"})
-    response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
-    return response
+    # log the CSRF token from the request
+    csrf_token = request.META.get("CSRF_COOKIE")
+    logger.debug(f"CSRF token from request: {csrf_token}")
+    logout(request)
+    return Response({"detail": "Logout successful"})
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")

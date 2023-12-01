@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    "rest_framework_simplejwt.token_blacklist",
+    # "rest_framework_simplejwt.token_blacklist",
     # Local
     "accounts.apps.AccountsConfig",
     "cmsa.apps.CmsaConfig",
@@ -74,21 +74,42 @@ TEMPLATES = [
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
 }
 
-from datetime import timedelta
+# from datetime import timedelta
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-    "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": True,
-    "ACCESS_TOKEN_CLASS": "accounts.tokens.CustomAccessToken",
-    "REFRESH_TOKEN_CLASS": "accounts.tokens.CustomRefreshToken",
-}
+# SIMPLE_JWT = {
+#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
+#     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+#     "ROTATE_REFRESH_TOKENS": False,
+#     "BLACKLIST_AFTER_ROTATION": True,
+#     "ACCESS_TOKEN_CLASS": "accounts.tokens.CustomAccessToken",
+#     "REFRESH_TOKEN_CLASS": "accounts.tokens.CustomRefreshToken",
+# }
 
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "handlers": {
+#         "file": {
+#             "level": "DEBUG",
+#             "class": "logging.FileHandler",
+#             "filename": "django_debug.log",
+#         },
+#         "console": {
+#             "class": "logging.StreamHandler",
+#         },
+#     },
+#     "loggers": {
+#         "django": {
+#             "handlers": ["file", "console"],
+#             "level": "DEBUG",
+#             "propagate": True,
+#         },
+#     },
+# }
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
