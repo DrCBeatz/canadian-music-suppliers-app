@@ -36,6 +36,15 @@ class ProtectedTestView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        # Log the request details
+        user = request.user
+        logger.debug(f"Protected endpoint accessed by user: {user.username}")
+
+        # Log the authoization header (token)
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
+        if auth_header:
+            logger.debug(f"Authorization header: {auth_header}")
+
         return Response({"message": "This is a protected endpoint"})
 
 
@@ -108,6 +117,9 @@ def logout_view(request):
             logger.debug(f"Token blacklisted: {outstanding_token}")
         else:
             logger.debug("No outstanding token found for blacklisting")
+        
+        blacklisted_tokens = BlacklistedToken.objects.all()
+        logger.debug(f"Current Blacklisted Tokens: {[token.token.jti for token in blacklisted_tokens]}")
 
     except Exception as e:
         logger.error(f"Error during logout: {e}")

@@ -281,39 +281,6 @@ def test_protected_view_unauthenticated_access():
     assert response.status_code == 401  # Unauthorized
 
 
-# Below test is failing
-
-# @pytest.mark.django_db
-# def test_token_invalid_post_logout(client, create_test_user):
-#     # Step 1: Log in the user and obtain the tokens
-#     user = create_test_user
-#     login_response = client.post("/api/token/", {"username": user.username, "password": "12345"})
-#     access_token = login_response.data["access"]
-#     refresh_token_jti = jwt.decode(login_response.data["refresh"], settings.SECRET_KEY, algorithms=["HS256"])["jti"]
-
-#     # Step 2: Make an authenticated request to a protected endpoint
-#     protected_url = "/api/protected-test/"
-#     auth_headers = {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
-#     protected_response_pre_logout = client.get(protected_url, **auth_headers)
-#     assert (
-#         protected_response_pre_logout.status_code == 200
-#     )  # or other success status code
-
-#     # Step 3: Log out the user
-#     client.post("/api/logout/", {}, format="json")
-
-#     # Step 3.1: Check if the token is blacklisted
-#     is_blacklisted = BlacklistedToken.objects.filter(token__jti=refresh_token_jti).exists()
-#     logger.debug(f"Is refresh token blacklisted: {is_blacklisted}")
-#     assert is_blacklisted
-
-#     # Step 4: Make another request using the same token and expect it to fail
-#     protected_response_post_logout = client.get(protected_url, **auth_headers)
-#     assert (
-#         protected_response_post_logout.status_code == 401
-#     )  # Unauthorized or other appropriate failure code
-
-
 @pytest.mark.django_db
 def test_logout_with_post_request(client, create_test_user):
     # Log in the user to set the cookies
@@ -406,3 +373,43 @@ def test_login_view_csrf(create_test_user, db):
 
     print(response_with_csrf.content)  # Add this line to inspect the response content
     assert response_with_csrf.status_code == 200
+
+
+# Below test is failing
+
+
+@pytest.mark.django_db
+def test_token_invalid_post_logout(client, create_test_user):
+    # Step 1: Log in the user and obtain the tokens
+    user = create_test_user
+    login_response = client.post(
+        "/api/token/", {"username": user.username, "password": "12345"}
+    )
+    access_token = login_response.data["access"]
+    refresh_token_jti = jwt.decode(
+        login_response.data["refresh"], settings.SECRET_KEY, algorithms=["HS256"]
+    )["jti"]
+
+    # Step 2: Make an authenticated request to a protected endpoint
+    protected_url = "/api/protected-test/"
+    auth_headers = {"HTTP_AUTHORIZATION": f"Bearer {access_token}"}
+    protected_response_pre_logout = client.get(protected_url, **auth_headers)
+    assert (
+        protected_response_pre_logout.status_code == 200
+    )  # or other success status code
+
+    # Step 3: Log out the user
+    client.post("/api/logout/", {}, format="json")
+
+    # Step 3.1: Check if the token is blacklisted
+    is_blacklisted = BlacklistedToken.objects.filter(
+        token__jti=refresh_token_jti
+    ).exists()
+    logger.debug(f"Is refresh token blacklisted: {is_blacklisted}")
+    assert is_blacklisted
+
+    # Step 4: Make another request using the same token and expect it to fail
+    protected_response_post_logout = client.get(protected_url, **auth_headers)
+    assert (
+        protected_response_post_logout.status_code == 401
+    )  # Unauthorized or other appropriate failure code

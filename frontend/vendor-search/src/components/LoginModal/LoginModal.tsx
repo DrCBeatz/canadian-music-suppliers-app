@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Modal from "react-modal";
 import "./LoginModal.css";
+import { getCsrfToken } from "../../utils/csrf";
 
 type LoginModalProps = {
   isOpen: boolean;
@@ -10,34 +11,40 @@ type LoginModalProps = {
   onLoginSuccess: () => void;
 };
 
-const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onRequestClose, onLoginSuccess }) => {
+const LoginModal: React.FC<LoginModalProps> = ({
+  isOpen,
+  onRequestClose,
+  onLoginSuccess,
+}) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
+    const csrfToken = getCsrfToken();
+    console.log("CSRF token:", csrfToken);
+  
     const apiUrl = import.meta.env.VITE_API_BASE_URL; // Accessing the API base URL from the .env file
-
+  
     try {
       const response = await fetch(`${apiUrl}/api/token/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken, // Include CSRF token in the request headers
         },
+        credentials: 'include', // Include credentials such as cookies in the request
         body: JSON.stringify({ username, password }),
       });
-
-        if (response.ok) {
-            onLoginSuccess();
-        }
-       else {
+  
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+        onLoginSuccess();
+      } else {
         console.error("Login error");
       }
-
-      const data = await response.json();
-      console.log(data);
-      onRequestClose();
     } catch (error) {
       console.error("Login error:", error);
     }
