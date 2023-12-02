@@ -43,12 +43,19 @@ const LoginModal: React.FC<LoginModalProps> = ({
         console.log(data);
         onLoginSuccess();
       } else {
-        console.error("Login error");
+        // Log the full response object for non-OK responses
+        console.error("Response status:", response.status);
+        console.error("Response headers:", response.headers);
+        response.text().then((text) => console.error("Response body:", text));
+        const errorData = await response.json(); // Parsing the response body to get error details
+        console.error("Parsed error data:", errorData);
+        // Optionally, you can also update the UI to inform the user about the error
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Network error:", error);
     }
   };
+
   return (
     <Modal
       isOpen={isOpen}

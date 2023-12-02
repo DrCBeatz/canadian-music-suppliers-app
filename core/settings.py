@@ -31,7 +31,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    # "rest_framework_simplejwt.token_blacklist",
     # Local
     "accounts.apps.AccountsConfig",
     "cmsa.apps.CmsaConfig",
@@ -70,7 +69,6 @@ TEMPLATES = [
         },
     },
 ]
-# core/settings.py
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -78,38 +76,7 @@ REST_FRAMEWORK = {
     ),
 }
 
-# from datetime import timedelta
 
-# SIMPLE_JWT = {
-#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
-#     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-#     "ROTATE_REFRESH_TOKENS": False,
-#     "BLACKLIST_AFTER_ROTATION": True,
-#     "ACCESS_TOKEN_CLASS": "accounts.tokens.CustomAccessToken",
-#     "REFRESH_TOKEN_CLASS": "accounts.tokens.CustomRefreshToken",
-# }
-
-# LOGGING = {
-#     "version": 1,
-#     "disable_existing_loggers": False,
-#     "handlers": {
-#         "file": {
-#             "level": "DEBUG",
-#             "class": "logging.FileHandler",
-#             "filename": "django_debug.log",
-#         },
-#         "console": {
-#             "class": "logging.StreamHandler",
-#         },
-#     },
-#     "loggers": {
-#         "django": {
-#             "handlers": ["file", "console"],
-#             "level": "DEBUG",
-#             "propagate": True,
-#         },
-#     },
-# }
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -125,12 +92,12 @@ LOGGING = {
         },
         "core": {
             "handlers": ["console"],
-            "level": "DEBUG",  # Set to DEBUG to see more details
+            "level": "DEBUG",
             "propagate": False,
         },
         "accounts": {
             "handlers": ["console"],
-            "level": "DEBUG",  # Set to DEBUG to see more details
+            "level": "DEBUG",
             "propagate": False,
         },
     },
@@ -141,19 +108,18 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    # "http://localhost:3001",
-    "http://127.0.0.0:8000",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
-    # "http://localhost:3001",
 ]
 
 
 CORS_ORIGIN_WHITELIST = [
-    # "http://localhost:3000",
     "http://localhost:5173",
     "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']
 
 
 WSGI_APPLICATION = "core.wsgi.application"

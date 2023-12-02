@@ -34,6 +34,11 @@ logger = logging.getLogger(__name__)
 def login_view(request):
     logger.debug(f"Request Data: {request.data}")
     logger.debug(f"Request Headers: {request.headers}")
+    logger.debug(f"Origin Header: {request.headers.get('Origin')}")
+
+    # Log CSRF token details
+    csrf_token = request.META.get("CSRF_COOKIE")
+    logger.debug(f"CSRF Token from request: {csrf_token}")
 
     # Existing code for username, password retrieval and authentication
     username = request.data.get("username")
