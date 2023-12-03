@@ -1,6 +1,6 @@
 // LoginModal.tsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import "./LoginModal.css";
 import { getCsrfToken } from "../../utils/csrf";
@@ -21,6 +21,13 @@ const LoginModal: React.FC<LoginModalProps> = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
+  const resetForm = () => {
+    console.log("Resetting form");
+    setUsername("");
+    setPassword("");
+    setErrorMessage("");
+    setShowErrorMessage(false);
+  };
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
 
@@ -43,6 +50,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
       if (response.ok) {
         const data = await response.json();
         console.log(data);
+        resetForm();
 
         setShowErrorMessage(false);
         setTimeout(() => {
@@ -59,6 +67,12 @@ const LoginModal: React.FC<LoginModalProps> = ({
       console.error("Network error:", error);
     }
   };
+  useEffect(() => {
+    if (!isOpen) {
+      console.log("Modal closing, resetting form.");
+      resetForm();
+    }
+  }, [isOpen]);
   return (
     <Modal
       isOpen={isOpen}

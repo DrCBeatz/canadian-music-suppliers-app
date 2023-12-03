@@ -13,13 +13,24 @@ Modal.setAppElement("#root");
 const App: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+  const [loginModalKey, setLoginModalKey] = useState(0);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
-  const closeLoginModal = () => setIsLoginModalOpen(false);
+  const closeLoginModal = () => {
+    setIsLoginModalOpen(false);
+    // Wait for the closing animation to finish before remounting
+    setTimeout(() => {
+      setLoginModalKey((prevKey) => prevKey + 1);
+    }, 300);
+  };
 
   const handleLoginSuccess = () => {
     setIsUserLoggedIn(true);
-    closeLoginModal();
+    setIsLoginModalOpen(false);
+
+    setTimeout(() => {
+      setLoginModalKey((prevKey) => prevKey + 1);
+    }, 300);
   };
 
   const handleLogout = async () => {
@@ -59,6 +70,7 @@ const App: React.FC = () => {
       />
       <VendorSearch />
       <LoginModal
+        key={loginModalKey}
         isOpen={isLoginModalOpen}
         onRequestClose={closeLoginModal}
         onLoginSuccess={handleLoginSuccess}
