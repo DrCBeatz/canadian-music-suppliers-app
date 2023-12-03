@@ -68,3 +68,21 @@
 .login-modal__button:hover {
   background-color: #0056b3;
 }
+
+.login-modal__error-container {
+  height: 20px;
+  margin-bottom: 5px;
+  overflow: hidden;
+}
+
+.login-modal__error {
+  font-size: 12px;
+  font-weight: bold;
+  color: red;
+  opacity: 0;
+  transition: opacity 200ms ease-in-out;
+}
+
+.login-modal__error-visible {
+  opacity: 1;
+}

@@ -18,6 +18,8 @@ const LoginModal: React.FC<LoginModalProps> = ({
 }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -25,37 +27,38 @@ const LoginModal: React.FC<LoginModalProps> = ({
     const csrfToken = getCsrfToken();
     console.log("CSRF token:", csrfToken);
 
-    const apiUrl = import.meta.env.VITE_API_BASE_URL; // Accessing the API base URL from the .env file
+    const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
     try {
       const response = await fetch(`${apiUrl}/api/login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken, // Include CSRF token in the request headers
+          "X-CSRFToken": csrfToken,
         },
-        credentials: "include", // Include credentials such as cookies in the request
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
 
       if (response.ok) {
         const data = await response.json();
         console.log(data);
-        onLoginSuccess();
+
+        setShowErrorMessage(false);
+        setTimeout(() => {
+          setErrorMessage("");
+          onLoginSuccess();
+        }, 200);
       } else {
-        // Log the full response object for non-OK responses
-        console.error("Response status:", response.status);
-        console.error("Response headers:", response.headers);
-        response.text().then((text) => console.error("Response body:", text));
-        const errorData = await response.json(); // Parsing the response body to get error details
-        console.error("Parsed error data:", errorData);
-        // Optionally, you can also update the UI to inform the user about the error
+        const responseBody = await response.text();
+        const errorData = JSON.parse(responseBody);
+        setErrorMessage(errorData.detail || "Login failed. Please try again.");
+        setShowErrorMessage(true);
       }
     } catch (error) {
       console.error("Network error:", error);
     }
   };
-
   return (
     <Modal
       isOpen={isOpen}
@@ -89,6 +92,15 @@ const LoginModal: React.FC<LoginModalProps> = ({
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+        <div className="login-modal__error-container">
+          <div
+            className={`login-modal__error ${
+              showErrorMessage ? "login-modal__error-visible" : ""
+            }`}
+          >
+            {errorMessage}
+          </div>
+        </div>
         <button className="login-modal__button" type="submit">
           Login
         </button>
