@@ -8,7 +8,7 @@ import { getCsrfToken } from "../../utils/csrf";
 type LoginModalProps = {
   isOpen: boolean;
   onRequestClose: () => void;
-  onLoginSuccess: () => void;
+  onLoginSuccess: (username: string) => void;
 };
 
 const LoginModal: React.FC<LoginModalProps> = ({
@@ -22,7 +22,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
   const [showErrorMessage, setShowErrorMessage] = useState(false);
 
   const resetForm = () => {
-    console.log("Resetting form");
     setUsername("");
     setPassword("");
     setErrorMessage("");
@@ -32,7 +31,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
     event.preventDefault();
 
     const csrfToken = getCsrfToken();
-    console.log("CSRF token:", csrfToken);
 
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -48,14 +46,12 @@ const LoginModal: React.FC<LoginModalProps> = ({
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log(data);
         resetForm();
 
         setShowErrorMessage(false);
         setTimeout(() => {
           setErrorMessage("");
-          onLoginSuccess();
+          onLoginSuccess(username);
         }, 200);
       } else {
         const responseBody = await response.text();
@@ -69,7 +65,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
   };
   useEffect(() => {
     if (!isOpen) {
-      console.log("Modal closing, resetting form.");
       resetForm();
     }
   }, [isOpen]);
@@ -115,7 +110,11 @@ const LoginModal: React.FC<LoginModalProps> = ({
             {errorMessage}
           </div>
         </div>
-        <button className="login-modal__button" type="submit">
+        <button
+          className="login-modal__button"
+          data-testid="modal-login-button"
+          type="submit"
+        >
           Login
         </button>
         <button

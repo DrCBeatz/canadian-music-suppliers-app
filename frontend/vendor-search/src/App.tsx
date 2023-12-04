@@ -1,6 +1,6 @@
 // App.tsx
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar/Navbar";
 import VendorSearch from "./components/VendorSearch/VendorSearch";
 import LoginModal from "./components/LoginModal/LoginModal";
@@ -8,12 +8,17 @@ import "./App.css";
 import Modal from "react-modal";
 import { getCsrfToken } from "./utils/csrf";
 
-Modal.setAppElement("#root");
-
 const App: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [loginModalKey, setLoginModalKey] = useState(0);
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "test") {
+      Modal.setAppElement("#root");
+    }
+  }, []);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => {
@@ -24,8 +29,9 @@ const App: React.FC = () => {
     }, 300);
   };
 
-  const handleLoginSuccess = () => {
+  const handleLoginSuccess = (username: string) => {
     setIsUserLoggedIn(true);
+    setUsername(username);
     setIsLoginModalOpen(false);
 
     setTimeout(() => {
@@ -36,7 +42,6 @@ const App: React.FC = () => {
   const handleLogout = async () => {
     try {
       const csrfToken = getCsrfToken();
-      console.log("CSRF Token during logout:", csrfToken); // Log the CSRF token
       const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
       const response = await fetch(`${apiUrl}/api/logout/`, {
@@ -48,8 +53,8 @@ const App: React.FC = () => {
         },
       });
       if (response.ok) {
+        setUsername("");
         setIsUserLoggedIn(false);
-        console.log("Logout successful");
       } else {
         console.error(
           "Logout failed: Server responded with status",
@@ -65,6 +70,7 @@ const App: React.FC = () => {
     <>
       <Navbar
         isUserLoggedIn={isUserLoggedIn}
+        username={username}
         onLoginClick={openLoginModal}
         onLogoutClick={handleLogout}
       />

@@ -26,3 +26,9 @@
 .navbar__login-button:hover {
   background-color: #0056b3;
 }
+
+.navbar__username {
+  margin-right: 1rem;
+  font-weight: bold;
+  color: #333;
+}
