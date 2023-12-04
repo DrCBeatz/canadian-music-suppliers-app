@@ -1,4 +1,5 @@
-import React from "react";
+// App.test.tsx
+
 import { render, fireEvent, screen, waitFor } from "@testing-library/react";
 import App from "./App";
 import { describe, test, vi } from "vitest";
