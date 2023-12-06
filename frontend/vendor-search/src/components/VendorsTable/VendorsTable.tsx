@@ -4,28 +4,54 @@ import Modal from "react-modal";
 import "./VendorsTable.css";
 import "./VendorsTableModal.css";
 
+export interface Supplier {
+  name: string;
+  primary_contact_name?: string;
+  primary_contact_email?: string;
+  website?: string;
+  phone?: string;
+  max_delivery_time?: string;
+  minimum_order_amount?: string;
+  notes?: string;
+  shipping_fees?: string;
+  accounting_email?: string;
+  accounting_contact?: string;
+  account_number?: string;
+  account_active?: boolean;
+}
+
 export interface Vendor {
   id: number;
   name: string;
-  suppliers: {
-    name: string;
-    primary_contact_name?: string;
-    primary_contact_email?: string;
-    website?: string;
-    phone?: string;
-  }[];
+  suppliers: Supplier[];
   categories: { name: string }[];
 }
 
 interface VendorsTableProps {
   vendors: Vendor[];
+  isUserLoggedIn: boolean;
 }
 
-const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
+const VendorsTable: React.FC<VendorsTableProps> = ({
+  vendors,
+  isUserLoggedIn,
+}) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSupplier, setCurrentSupplier] = useState<
     null | Vendor["suppliers"][0]
   >(null);
+
+  const renderField = (label: string, value: string | boolean | null | undefined) => {
+    if (value || value === false) {
+      // Checks for non-null, non-undefined, and non-empty string. Also, explicitly allows boolean false.
+      return (
+        <p>
+          <strong>{label}:</strong> {value.toString()}
+        </p>
+      );
+    }
+    return null;
+  };
 
   const openModal = (supplier: Vendor["suppliers"][0]) => {
     setCurrentSupplier(supplier);
@@ -133,6 +159,29 @@ const VendorsTable: React.FC<VendorsTableProps> = ({ vendors }) => {
         <p>
           <strong>Phone:</strong> {currentSupplier?.phone}
         </p>
+
+        {isUserLoggedIn && currentSupplier && (
+          <>
+            {renderField(
+              "Minimum Order Amount",
+              currentSupplier.minimum_order_amount
+            )}
+            {renderField("Notes", currentSupplier.notes)}
+            {renderField("Shipping Fees", currentSupplier.shipping_fees)}
+            {renderField(
+              "Max Delivery Time",
+              currentSupplier.max_delivery_time
+            )}
+            {renderField("Accounting Email", currentSupplier.accounting_email)}
+            {renderField(
+              "Accounting Contact",
+              currentSupplier.accounting_contact
+            )}
+            {renderField("Accounting Number", currentSupplier.account_number)}
+            {renderField("Account Active", currentSupplier.account_active)}
+          </>
+        )}
+
         <button
           className="vendors-table__modal-close-button"
           onClick={closeModal}

@@ -54,7 +54,7 @@ describe("VendorSearch", () => {
   });
 
   test("renders components correctly on initial load", () => {
-    render(<VendorSearch />);
+    render(<VendorSearch isUserLoggedIn={false}/>);
 
     // Expectations for initial render:
     expect(screen.getByRole("searchbox")).toBeInTheDocument(); // This assumes SearchForm renders an input of type "search"
@@ -85,7 +85,7 @@ describe("VendorSearch", () => {
 
     (fetch as FetchMock).mockResolvedValueOnce(createFetchResponse(mockData));
 
-    render(<VendorSearch />);
+    render(<VendorSearch isUserLoggedIn={false} />);
 
     console.log("VendorSearch component rendered.");
 
@@ -117,7 +117,7 @@ describe("VendorSearch", () => {
     // Spy on console.error to verify if the error gets logged as expected
     const consoleSpy = vi.spyOn(console, "error");
 
-    render(<VendorSearch />);
+    render(<VendorSearch isUserLoggedIn={false} />);
 
     // Simulate a search action, which should trigger the fetch request
     const searchButton = screen.getByRole("button", { name: /search/i });
@@ -137,7 +137,7 @@ describe("VendorSearch", () => {
   });
 
   test("calls searchVendors with the correct term on form submit", async () => {
-    render(<VendorSearch />);
+    render(<VendorSearch isUserLoggedIn={false} />);
 
     const searchTerm = "test vendor";
     const searchInput = screen.getByRole("searchbox");
@@ -167,7 +167,7 @@ describe("VendorSearch", () => {
 
     (fetch as FetchMock).mockResolvedValueOnce(createFetchResponse(mockData));
 
-    render(<VendorSearch />);
+    render(<VendorSearch isUserLoggedIn={false} />);
 
     const searchTerm = "test vendor";
     const searchInput = screen.getByRole("searchbox");
@@ -192,7 +192,7 @@ describe("VendorSearch", () => {
     ];
     (fetch as FetchMock).mockResolvedValueOnce(createFetchResponse(mockData));
 
-    render(<VendorSearch />);
+    render(<VendorSearch isUserLoggedIn={false} />);
 
     const searchInput = screen.getByRole("searchbox");
     fireEvent.change(searchInput, { target: { value: "Vendor A" } });
@@ -214,7 +214,7 @@ describe("VendorSearch", () => {
 
       const consoleSpy = vi.spyOn(console, "error");
 
-      render(<VendorSearch />);
+      render(<VendorSearch isUserLoggedIn={false} />);
 
       const searchInput = screen.getByRole("searchbox");
       fireEvent.change(searchInput, { target: { value: "Vendor A" } });
@@ -247,7 +247,7 @@ describe("VendorSearch", () => {
 
     const consoleSpy = vi.spyOn(console, "error");
 
-    render(<VendorSearch />);
+    render(<VendorSearch isUserLoggedIn={false} />);
 
     const searchInput = screen.getByRole("searchbox");
     fireEvent.change(searchInput, { target: { value: "Vendor A" } });
@@ -280,7 +280,7 @@ describe("VendorSearch", () => {
     }) as FetchMockType;
 
     // Render the component with a mocked API URL
-    render(<VendorSearch apiUrl={mockApiUrl} />);
+    render(<VendorSearch apiUrl={mockApiUrl} isUserLoggedIn={false}/>);
 
     // Simulate a search action to trigger the fetch call
     const searchInput = screen.getByRole("searchbox");

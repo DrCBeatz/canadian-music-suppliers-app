@@ -28,7 +28,7 @@ describe("VendorsTable", () => {
   });
 
   beforeEach(() => {
-    render(<VendorsTable vendors={mockVendors} />);
+    render(<VendorsTable vendors={mockVendors} isUserLoggedIn={false} />);
   });
 
   test("renders vendors, suppliers, and categories", () => {

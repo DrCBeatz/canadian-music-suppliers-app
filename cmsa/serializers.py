@@ -17,6 +17,14 @@ class SupplierSerializer(serializers.ModelSerializer):
             "primary_contact_email",
             "website",
             "phone",
+            "max_delivery_time",
+            "minimum_order_amount",
+            "notes",
+            "shipping_fees",
+            "accounting_email",
+            "accounting_contact",
+            "account_number",
+            "account_active",
         ]
 
     def get_primary_contact_name(self, obj):

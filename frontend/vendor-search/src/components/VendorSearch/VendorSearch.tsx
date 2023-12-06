@@ -7,8 +7,9 @@ import VendorsTable, { Vendor } from "../VendorsTable/VendorsTable";
 
 interface VendorSearchProps {
   apiUrl?: string;
+  isUserLoggedIn: boolean;
 }
-const VendorSearch: React.FC<VendorSearchProps> = ({ apiUrl }) => {
+const VendorSearch: React.FC<VendorSearchProps> = ({ apiUrl, isUserLoggedIn }) => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const baseApiUrl = apiUrl || import.meta.env.VITE_API_BASE_URL;
 
@@ -36,7 +37,7 @@ const VendorSearch: React.FC<VendorSearchProps> = ({ apiUrl }) => {
   return (
     <div className="vendor-search">
       <SearchForm onSearch={searchVendors} />
-      <VendorsTable vendors={vendors} />
+      <VendorsTable vendors={vendors} isUserLoggedIn={isUserLoggedIn} />
     </div>
   );
 };

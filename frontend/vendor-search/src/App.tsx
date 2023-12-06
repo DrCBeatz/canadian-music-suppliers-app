@@ -74,7 +74,7 @@ const App: React.FC = () => {
         onLoginClick={openLoginModal}
         onLogoutClick={handleLogout}
       />
-      <VendorSearch />
+      <VendorSearch isUserLoggedIn={isUserLoggedIn} />
       <LoginModal
         key={loginModalKey}
         isOpen={isLoginModalOpen}
