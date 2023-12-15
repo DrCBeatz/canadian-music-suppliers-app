@@ -14,6 +14,14 @@ const mockVendors: Vendor[] = [
         primary_contact_email: "john@example.com",
         website: "http://example.com",
         phone: "123-456-7890",
+        minimum_order_amount: "100",
+        notes: "Special instructions here",
+        shipping_fees: "5",
+        max_delivery_time: "48h",
+        accounting_email: "accounting@example.com",
+        accounting_contact: "Jane Doe",
+        account_number: "1234567890",
+        account_active: true,
       },
       { name: "Supplier A2" },
     ],
@@ -61,5 +69,27 @@ describe("VendorsTable", () => {
     });
 
     expect(screen.getByText("Supplier A1")).toBeInTheDocument(); // Supplier A1 is still present in the table
+  });
+});
+
+describe("VendorsTable with isUserLoggedIn true", () => {
+  beforeEach(() => {
+    render(<VendorsTable vendors={mockVendors} isUserLoggedIn={true} />);
+  });
+
+  test("renders additional fields when isUserLoggedIn is true", async () => {
+    fireEvent.click(screen.getByText("Supplier A1")); // Trigger modal
+
+    // Verify that the additional fields are rendered
+    await waitFor(() => {
+      expect(screen.getByText(/Minimum Order Amount:/)).toBeInTheDocument();
+      expect(screen.getByText(/Notes:/)).toBeInTheDocument();
+      expect(screen.getByText(/Shipping Fees:/)).toBeInTheDocument();
+      expect(screen.getByText(/Max Delivery Time:/)).toBeInTheDocument();
+      expect(screen.getByText(/Accounting Email:/)).toBeInTheDocument();
+      expect(screen.getByText(/Accounting Contact:/)).toBeInTheDocument();
+      expect(screen.getByText(/Accounting Number:/)).toBeInTheDocument();
+      expect(screen.getByText(/Account Active:/)).toBeInTheDocument();
+    });
   });
 });
