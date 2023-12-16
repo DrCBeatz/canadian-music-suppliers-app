@@ -93,3 +93,30 @@ describe("VendorsTable with isUserLoggedIn true", () => {
     });
   });
 });
+
+describe("VendorsTable with isUserLoggedIn false", () => {
+  beforeEach(() => {
+    render(<VendorsTable vendors={mockVendors} isUserLoggedIn={false} />);
+  });
+
+  test("does not render additional fields when isUserLoggedIn is false", async () => {
+    render(<VendorsTable vendors={mockVendors} isUserLoggedIn={false} />);
+
+    // Use getAllByText to retrieve all elements, then select the one you want to interact with
+    const supplierElements = screen.getAllByText("Supplier A1");
+    fireEvent.click(supplierElements[0]); // Adjust the index if needed to target the correct element
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText(/Minimum Order Amount:/)
+      ).not.toBeInTheDocument();
+      expect(screen.queryByText(/Notes:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Shipping Fees:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Max Delivery Time:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Accounting Email:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Accounting Contact:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Accounting Number:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Account Active:/)).not.toBeInTheDocument();
+    });
+  });
+});
