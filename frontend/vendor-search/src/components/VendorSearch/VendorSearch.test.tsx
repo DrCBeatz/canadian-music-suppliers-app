@@ -1,5 +1,5 @@
 // VendorSearch.test.tsx
-//
+
 import {
   render,
   screen,
@@ -17,13 +17,6 @@ type FetchResponse = {
   json: () => Promise<unknown>;
 };
 
-type FetchMockType = {
-  (url: RequestInfo | URL, init?: RequestInit): Promise<Response>;
-  mockImplementation: (
-    mock: (url: RequestInfo | URL, init?: RequestInit) => Promise<Response>
-  ) => void;
-};
-
 type FetchMock = typeof fetch & {
   mockResolvedValueOnce: (response: FetchResponse) => void;
   mockRejectedValueOnce: (error: Error) => void;
@@ -37,35 +30,25 @@ describe("VendorSearch", () => {
     };
   };
   beforeEach(() => {
-    // Mock environment variable for tests
     vi.mock("import.meta", () => ({
-      env: {
-        VITE_API_BASE_URL: "http://localhost:8000",
-      },
+      env: { VITE_API_BASE_URL: "http://localhost:8000" },
     }));
-  });
-
-    // Clear all mocks before each test
     vi.clearAllMocks();
 
-    // Set up a default fetch mock
-    global.fetch = vi.fn((url: RequestInfo, options?: RequestInit) => {
-      const defaultOptions = {
-        credentials: 'include' as const, // Ensuring credentials include is default
-        ...options, // Spread in other options
-      };
-    
-      // Your mock response logic
-      return Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve([]), // Modify as needed for your mock data
-        url,
-        options: defaultOptions,
-      }) as unknown as Promise<Response>; // Cast to fit the fetch signature
-    }) as FetchMockType;
+    global.fetch = vi.fn((url: RequestInfo | URL, options?: RequestInit) => {
+      console.log(`Fetching ${url} with options:`, options);
+      const response = new Response(JSON.stringify([]), {
+        status: 200,
+        statusText: "OK",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      return Promise.resolve(response);
+    }) as typeof fetch;
+  });
 
   test("renders components correctly on initial load", () => {
-    render(<VendorSearch isUserLoggedIn={false}/>);
+    render(<VendorSearch isUserLoggedIn={false} />);
 
     // Expectations for initial render:
     expect(screen.getByRole("searchbox")).toBeInTheDocument(); // This assumes SearchForm renders an input of type "search"
@@ -109,7 +92,6 @@ describe("VendorSearch", () => {
     const displayedVendor = await screen.findByText("Vendor 1");
 
     expect(displayedVendor).toBeInTheDocument();
-
   });
 
   /**
@@ -161,7 +143,7 @@ describe("VendorSearch", () => {
       expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining(`?search=${searchTerm}`),
         expect.objectContaining({
-          credentials: 'include',
+          credentials: "include",
           // Add other expected properties here
         })
       );
@@ -219,18 +201,15 @@ describe("VendorSearch", () => {
       expect(fetch).toHaveBeenCalledWith(
         expect.stringContaining("?search=Vendor A"),
         expect.objectContaining({
-          credentials: 'include',
-          // Add other expected properties here
+          credentials: "include",
         })
       );
     });
-  
 
-    
     // Check that the state has been set based on the mock fetch response
     expect(screen.getByText("Vendor A")).toBeInTheDocument();
   });
-  
+
   test("searchVendors logs an error on failed fetch", async () => {
     const mockError = "Network error";
     (fetch as FetchMock).mockRejectedValueOnce(new Error(mockError));
@@ -296,10 +275,10 @@ describe("VendorSearch", () => {
         json: () => Promise.resolve([]),
         url, // Track the URL used in the fetch call
       });
-    }) as FetchMockType;
+    });
 
     // Render the component with a mocked API URL
-    render(<VendorSearch apiUrl={mockApiUrl} isUserLoggedIn={false}/>);
+    render(<VendorSearch apiUrl={mockApiUrl} isUserLoggedIn={false} />);
 
     // Simulate a search action to trigger the fetch call
     const searchInput = screen.getByRole("searchbox");
@@ -311,11 +290,12 @@ describe("VendorSearch", () => {
 
     // Wait for fetch to be called and then verify the URL
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining(mockApiUrl),
+      expect(fetch).toHaveBeenCalledWith(
+        expect.stringContaining(mockApiUrl),
         expect.objectContaining({
-          credentials: 'include',
+          credentials: "include",
         })
-        );
+      );
     });
-  })
+  });
 });
