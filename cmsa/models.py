@@ -3,6 +3,7 @@
 from cryptography.fernet import Fernet
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_init
 
 
 class Contact(models.Model):
@@ -40,12 +41,21 @@ class Supplier(models.Model):
     accounting_contact = models.CharField(max_length=200, null=True, blank=True)
     account_number = models.CharField(max_length=200, null=True, blank=True)
     account_active = models.BooleanField(default=False)
+    __original_website_password = None
 
+    def __init__(self, *args, **kwargs):
+        super(Supplier, self).__init__(*args, **kwargs)
+        self.__original_website_password = self.website_password
+        
     def save(self, *args, **kwargs):
-        # Encrypt the password before saving
-        if self.website_password:
-            self.website_password = self.encrypt_password(self.website_password)
+        # Encrypt the password only if it's been changed
+        if self.website_password != self.__original_website_password:
+            if self.website_password:
+                self.website_password = self.encrypt_password(self.website_password)
+
         super().save(*args, **kwargs)
+        # Update the original password to the new one after save
+        self.__original_website_password = self.website_password
 
     @staticmethod
     def encrypt_password(password):
