@@ -43,16 +43,11 @@ const App: React.FC = () => {
     }
   };
 
-
   useEffect(() => {
     if (process.env.NODE_ENV !== "test") {
       Modal.setAppElement("#root");
     }
   }, []);
-
-  const clearVendors = () => {
-    setVendors([]);
-  };
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => {
@@ -122,7 +117,6 @@ const App: React.FC = () => {
         isOpen={isLoginModalOpen}
         onRequestClose={closeLoginModal}
         onLoginSuccess={handleLoginSuccess}
-        onLoginStart={clearVendors}
       />
     </>
   );

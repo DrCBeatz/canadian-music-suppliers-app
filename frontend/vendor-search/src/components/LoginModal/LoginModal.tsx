@@ -9,14 +9,13 @@ type LoginModalProps = {
   isOpen: boolean;
   onRequestClose: () => void;
   onLoginSuccess: (username: string) => void;
-  onLoginStart: () => void;
+  onLoginStart?: () => void;
 };
 
 const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
   onRequestClose,
   onLoginSuccess,
-  onLoginStart,
 }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -31,8 +30,6 @@ const LoginModal: React.FC<LoginModalProps> = ({
   };
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
-
-    onLoginStart();
 
     const csrfToken = getCsrfToken();
 
