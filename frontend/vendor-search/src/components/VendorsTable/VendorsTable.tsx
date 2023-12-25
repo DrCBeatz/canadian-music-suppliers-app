@@ -1,5 +1,5 @@
 // VendorsTable.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import "./VendorsTable.css";
 import "./VendorsTableModal.css";
@@ -42,6 +42,10 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   const [currentSupplier, setCurrentSupplier] = useState<
     null | Vendor["suppliers"][0]
   >(null);
+
+  useEffect(() => {
+    setCurrentSupplier(null);
+  }, [vendors]);
 
   const renderField = (
     label: string,

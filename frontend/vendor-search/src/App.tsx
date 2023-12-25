@@ -7,18 +7,52 @@ import LoginModal from "./components/LoginModal/LoginModal";
 import "./App.css";
 import Modal from "react-modal";
 import { getCsrfToken } from "./utils/csrf";
+import { Vendor } from "./components/VendorsTable/VendorsTable";
 
 const App: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
   const [loginModalKey, setLoginModalKey] = useState(0);
   const [username, setUsername] = useState("");
+  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [lastSearchTerm, setLastSearchTerm] = useState("");
+
+  const baseApiUrl = import.meta.env.VITE_API_BASE_URL;
+
+  const searchVendors = async (searchTerm: string): Promise<void> => {
+    setLastSearchTerm(searchTerm);
+    try {
+      const response = await fetch(
+        `${baseApiUrl}/routes/vendors/?search=${searchTerm}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data: Vendor[] = await response.json();
+      setVendors(data);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error("Error fetching data: ", error);
+      } else {
+        console.error("An unexpected error occurred:", error);
+      }
+    }
+  };
+
 
   useEffect(() => {
     if (process.env.NODE_ENV !== "test") {
       Modal.setAppElement("#root");
     }
   }, []);
+
+  const clearVendors = () => {
+    setVendors([]);
+  };
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => {
@@ -33,6 +67,9 @@ const App: React.FC = () => {
     setIsUserLoggedIn(true);
     setUsername(username);
     setIsLoginModalOpen(false);
+    if (lastSearchTerm) {
+      searchVendors(lastSearchTerm);
+    }
 
     setTimeout(() => {
       setLoginModalKey((prevKey) => prevKey + 1);
@@ -74,12 +111,18 @@ const App: React.FC = () => {
         onLoginClick={openLoginModal}
         onLogoutClick={handleLogout}
       />
-      <VendorSearch isUserLoggedIn={isUserLoggedIn} />
+      <VendorSearch
+        isUserLoggedIn={isUserLoggedIn}
+        vendors={vendors}
+        lastSearchTerm={lastSearchTerm}
+        onSearch={searchVendors}
+      />
       <LoginModal
         key={loginModalKey}
         isOpen={isLoginModalOpen}
         onRequestClose={closeLoginModal}
         onLoginSuccess={handleLoginSuccess}
+        onLoginStart={clearVendors}
       />
     </>
   );
