@@ -18,6 +18,8 @@ export interface Supplier {
   accounting_contact?: string;
   account_number?: string;
   account_active?: boolean;
+  website_username?: string;
+  website_password?: string;
 }
 
 export interface Vendor {
@@ -41,7 +43,10 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
     null | Vendor["suppliers"][0]
   >(null);
 
-  const renderField = (label: string, value: string | boolean | null | undefined) => {
+  const renderField = (
+    label: string,
+    value: string | boolean | null | undefined
+  ) => {
     if (value || value === false) {
       // Checks for non-null, non-undefined, and non-empty string. Also, explicitly allows boolean false.
       return (
@@ -61,7 +66,8 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   const closeModal = () => {
     setIsModalOpen(false);
   };
-
+  console.log("Is User Logged In: ", isUserLoggedIn);
+  console.log("Current Supplier: ", currentSupplier);
   return (
     <div>
       <table className="vendors-table">
@@ -179,6 +185,8 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
             )}
             {renderField("Accounting Number", currentSupplier.account_number)}
             {renderField("Account Active", currentSupplier.account_active)}
+            {renderField("Website Username", currentSupplier.website_username)}
+            {renderField("Website Passwrod", currentSupplier.website_password)}
           </>
         )}
 

@@ -25,6 +25,31 @@ class SupplierSerializer(serializers.ModelSerializer):
             "accounting_contact",
             "account_number",
             "account_active",
+            "website_username",
+            "website_password",
+        ]
+
+    def get_primary_contact_name(self, obj):
+        primary_contact = obj.contacts.filter(primary_contact=True).first()
+        return primary_contact.name if primary_contact else None
+
+    def get_primary_contact_email(self, obj):
+        primary_contact = obj.contacts.filter(primary_contact=True).first()
+        return primary_contact.email if primary_contact else None
+
+class SupplierPublicSerializer(serializers.ModelSerializer):
+    primary_contact_name = serializers.SerializerMethodField()
+    primary_contact_email = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Supplier
+        fields = [
+            "id",
+            "name",
+            "primary_contact_name",
+            "primary_contact_email",
+            "website",
+            "phone",
         ]
 
     def get_primary_contact_name(self, obj):
@@ -44,6 +69,19 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class VendorSerializer(serializers.ModelSerializer):
     suppliers = SupplierSerializer(many=True, read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Vendor
+        fields = [
+            "id",
+            "name",
+            "suppliers",
+            "categories",
+        ]
+
+class VendorPublicSerializer(serializers.ModelSerializer):
+    suppliers = SupplierPublicSerializer(many=True, read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
 
     class Meta:

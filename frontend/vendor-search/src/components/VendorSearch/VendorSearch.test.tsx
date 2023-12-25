@@ -17,8 +17,11 @@ type FetchResponse = {
   json: () => Promise<unknown>;
 };
 
-type FetchMockType = typeof fetch & {
-  mockImplementation: (mock: () => Promise<FetchResponse>) => void;
+type FetchMockType = {
+  (url: RequestInfo | URL, init?: RequestInit): Promise<Response>;
+  mockImplementation: (
+    mock: (url: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+  ) => void;
 };
 
 type FetchMock = typeof fetch & {
@@ -40,18 +43,26 @@ describe("VendorSearch", () => {
         VITE_API_BASE_URL: "http://localhost:8000",
       },
     }));
+  });
 
     // Clear all mocks before each test
     vi.clearAllMocks();
 
     // Set up a default fetch mock
-    global.fetch = vi.fn().mockImplementation(() => {
+    global.fetch = vi.fn((url: RequestInfo, options?: RequestInit) => {
+      const defaultOptions = {
+        credentials: 'include' as const, // Ensuring credentials include is default
+        ...options, // Spread in other options
+      };
+    
+      // Your mock response logic
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve([]),
-      });
+        json: () => Promise.resolve([]), // Modify as needed for your mock data
+        url,
+        options: defaultOptions,
+      }) as unknown as Promise<Response>; // Cast to fit the fetch signature
     }) as FetchMockType;
-  });
 
   test("renders components correctly on initial load", () => {
     render(<VendorSearch isUserLoggedIn={false}/>);
@@ -80,7 +91,6 @@ describe("VendorSearch", () => {
         suppliers: [{ name: "Supplier A" }],
         categories: [{ name: "Category X" }],
       },
-      // ... more mock data entries as needed
     ];
 
     (fetch as FetchMock).mockResolvedValueOnce(createFetchResponse(mockData));
@@ -100,7 +110,6 @@ describe("VendorSearch", () => {
 
     expect(displayedVendor).toBeInTheDocument();
 
-    // ... Check for other mock data entries as needed
   });
 
   /**
@@ -150,7 +159,11 @@ describe("VendorSearch", () => {
 
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining(`?search=${searchTerm}`)
+        expect.stringContaining(`?search=${searchTerm}`),
+        expect.objectContaining({
+          credentials: 'include',
+          // Add other expected properties here
+        })
       );
     });
   });
@@ -204,38 +217,44 @@ describe("VendorSearch", () => {
     // Check the fetch request
     await waitFor(() => {
       expect(fetch).toHaveBeenCalledWith(
-        expect.stringContaining("?search=Vendor A")
+        expect.stringContaining("?search=Vendor A"),
+        expect.objectContaining({
+          credentials: 'include',
+          // Add other expected properties here
+        })
+      );
+    });
+  
+
+    
+    // Check that the state has been set based on the mock fetch response
+    expect(screen.getByText("Vendor A")).toBeInTheDocument();
+  });
+  
+  test("searchVendors logs an error on failed fetch", async () => {
+    const mockError = "Network error";
+    (fetch as FetchMock).mockRejectedValueOnce(new Error(mockError));
+
+    const consoleSpy = vi.spyOn(console, "error");
+
+    render(<VendorSearch isUserLoggedIn={false} />);
+
+    const searchInput = screen.getByRole("searchbox");
+    fireEvent.change(searchInput, { target: { value: "Vendor A" } });
+    const form = searchInput.closest("form");
+    if (form) {
+      fireEvent.submit(form);
+    }
+
+    // Check that the error was logged
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith(
+        "Error fetching data: ",
+        expect.objectContaining({ message: mockError })
       );
     });
 
-    test("searchVendors logs an error on failed fetch", async () => {
-      const mockError = "Network error";
-      (fetch as FetchMock).mockRejectedValueOnce(new Error(mockError));
-
-      const consoleSpy = vi.spyOn(console, "error");
-
-      render(<VendorSearch isUserLoggedIn={false} />);
-
-      const searchInput = screen.getByRole("searchbox");
-      fireEvent.change(searchInput, { target: { value: "Vendor A" } });
-      const form = searchInput.closest("form");
-      if (form) {
-        fireEvent.submit(form);
-      }
-
-      // Check that the error was logged
-      await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith(
-          "Error fetching data: ",
-          expect.objectContaining({ message: mockError })
-        );
-      });
-
-      consoleSpy.mockRestore();
-    });
-
-    // Check that the state has been set based on the mock fetch response
-    expect(screen.getByText("Vendor A")).toBeInTheDocument();
+    consoleSpy.mockRestore();
   });
 
   test("searchVendors logs an error on invalid fetch response status", async () => {
@@ -292,7 +311,11 @@ describe("VendorSearch", () => {
 
     // Wait for fetch to be called and then verify the URL
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith(expect.stringContaining(mockApiUrl));
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining(mockApiUrl),
+        expect.objectContaining({
+          credentials: 'include',
+        })
+        );
     });
-  });
+  })
 });

@@ -9,14 +9,20 @@ interface VendorSearchProps {
   apiUrl?: string;
   isUserLoggedIn: boolean;
 }
-const VendorSearch: React.FC<VendorSearchProps> = ({ apiUrl, isUserLoggedIn }) => {
+const VendorSearch: React.FC<VendorSearchProps> = ({
+  apiUrl,
+  isUserLoggedIn,
+}) => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const baseApiUrl = apiUrl || import.meta.env.VITE_API_BASE_URL;
 
   const searchVendors = async (searchTerm: string): Promise<void> => {
     try {
       const response = await fetch(
-        `${baseApiUrl}/routes/vendors/?search=${searchTerm}`
+        `${baseApiUrl}/routes/vendors/?search=${searchTerm}`,
+        {
+          credentials: "include",
+        }
       );
 
       if (!response.ok) {

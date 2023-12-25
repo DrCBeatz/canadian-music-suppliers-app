@@ -172,6 +172,5 @@ describe("LoginModal", () => {
 
     // Verify if resetForm function was called
     expect(resetForm).toHaveBeenCalledTimes(2);
-
   });
 });

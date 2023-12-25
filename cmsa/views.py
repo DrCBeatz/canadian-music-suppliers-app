@@ -3,7 +3,13 @@
 from django.views.generic import TemplateView
 from rest_framework import viewsets
 from .models import Vendor, Supplier, Category
-from .serializers import VendorSerializer, SupplierSerializer, CategorySerializer
+from .serializers import (
+    VendorSerializer,
+    VendorPublicSerializer,
+    SupplierSerializer,
+    SupplierPublicSerializer,
+    CategorySerializer,
+)
 from django.db.models import Q
 from django.shortcuts import render
 
@@ -14,7 +20,6 @@ def frontend(request):
 
 class VendorViewSet(viewsets.ModelViewSet):
     queryset = Vendor.objects.all()
-    serializer_class = VendorSerializer
 
     def get_queryset(self):
         queryset = Vendor.objects.all()
@@ -27,10 +32,19 @@ class VendorViewSet(viewsets.ModelViewSet):
             ).distinct()
         return queryset
 
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated:
+            return VendorSerializer
+        return VendorPublicSerializer
+
 
 class SupplierViewSet(viewsets.ModelViewSet):
     queryset = Supplier.objects.all()
-    serializer_class = SupplierSerializer
+
+    def get_serializer_class(self):
+        if self.request.user.is_authenticated:
+            return SupplierSerializer
+        return SupplierPublicSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
