@@ -68,18 +68,36 @@ def test_password_encryption_on_edit():
     assert decrypted_password == updated_password
 
 
-# @pytest.mark.django_db
-# def test_password_encryption_and_decryption():
-#     plaintext_password = "sample_password"
-#     supplier = Supplier(name="Test Supplier", website_password=plaintext_password)
-#     supplier.save()
+@pytest.mark.django_db
+def test_password_encryption_and_decryption():
+    # Step 1: Create a new Supplier instance without saving it to the database
+    supplier = Supplier()
 
-#     # Re-fetch the supplier from the database
-#     supplier = Supplier.objects.get(pk=supplier.pk)
+    # Step 2: Set fields individually
+    supplier.name = "Test Supplier"
+    
+    # Set the website_password field (this should be the same process as entering a password in the admin)
+    supplier.website_password = "sample_password"
 
-#     # Directly test the decrypted password
-#     decrypted_password = supplier.decrypt_password()
-#     assert decrypted_password == plaintext_password
+    # Step 3: Save the instance (this should trigger the encryption in the save method)
+    supplier.save()
+
+    # Re-fetch the supplier from the database to ensure we're working with the saved data
+    supplier = Supplier.objects.get(pk=supplier.pk)
+
+    # Log or print the encrypted password to check what's being saved in the database
+    print("Encrypted password from db:", supplier.website_password)
+
+    # Ensure the encrypted password isn't the plaintext password
+    assert supplier.website_password != "sample_password"
+
+    # Directly test the decrypted password
+    decrypted_password = supplier.decrypt_password()
+    print("Decrypted password:", decrypted_password)
+
+    # Ensure the decrypted password is the same as the original plaintext password
+    assert decrypted_password == "sample_password"
+
 
 # @pytest.mark.django_db
 # def test_password_stays_encrypted_on_retrieve():
@@ -88,7 +106,7 @@ def test_password_encryption_on_edit():
 #     supplier.save()
 
 #     retrieved_supplier = Supplier.objects.get(pk=supplier.pk)
-    
+
 #     # Directly test the decrypted password
 #     decrypted_password = retrieved_supplier.decrypt_password()
 #     assert decrypted_password == plaintext_password
