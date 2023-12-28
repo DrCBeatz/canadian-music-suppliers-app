@@ -43,6 +43,8 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
     null | Vendor["suppliers"][0]
   >(null);
 
+  console.log("VendorsTable props - vendors:", vendors, "isUserLoggedIn:", isUserLoggedIn);
+
   useEffect(() => {
     setCurrentSupplier(null);
   }, [vendors]);
@@ -72,6 +74,7 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   };
   console.log("Is User Logged In: ", isUserLoggedIn);
   console.log("Current Supplier: ", currentSupplier);
+  {console.log("Mapping vendors:", vendors)};        
   return (
     <div>
       <table className="vendors-table">
@@ -83,7 +86,7 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {vendors.map((vendor) => (
+          {vendors.map((vendor) => ( // ***
             <tr className="vendors-table__row" key={vendor.id}>
               <td className="vendors-table__cell">{vendor.name}</td>
               <td className="vendors-table__cell">

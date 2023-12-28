@@ -18,14 +18,14 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
   onSearch,
   lastSearchTerm,
 }) => {
-  
   useEffect(() => {
     if (isUserLoggedIn && lastSearchTerm) {
+      console.log(`Searching for: ${lastSearchTerm}`);
       onSearch(lastSearchTerm);
     }
   }, [isUserLoggedIn]);
-  
 
+  console.log("Vendors before render:", vendors); // Add this line
   return (
     <div className="vendor-search">
       <SearchForm onSearch={onSearch} />
