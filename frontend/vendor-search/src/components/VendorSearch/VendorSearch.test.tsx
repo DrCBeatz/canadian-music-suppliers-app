@@ -11,23 +11,34 @@ import VendorSearch from "./VendorSearch";
 import { vi } from "vitest";
 import userEvent from '@testing-library/user-event';
 
+type MockData = {
+  id: number;
+  name: string;
+  suppliers: { name: string }[];
+  categories: { name: string }[];
+};
+
+function createMockResponse<T = MockData>(data: T): Response {
+  return new Response(JSON.stringify(data), {
+    status: 200,
+    statusText: 'OK',
+    headers: {
+      'Content-Type': 'application/json',
+    }
+  })
+}
+
 describe("VendorSearch", () => {
+  let originalFetch: typeof global.fetch;
+
   beforeEach(() => {
-    vi.mock("import.meta", () => ({
-      env: { VITE_API_BASE_URL: "http://localhost:8000" },
-    }));
-    vi.clearAllMocks();
+    originalFetch = global.fetch; // Save the original fetch
+    // Use createMockResponse function in your mock
+    global.fetch = vi.fn(() => Promise.resolve(createMockResponse([]))) as typeof fetch;
+  });
 
-    global.fetch = vi.fn((url: RequestInfo | URL, options?: RequestInit) => {
-      console.log(`Fetching ${url} with options:`, options);
-      const response = new Response(JSON.stringify([]), {
-        status: 200,
-        statusText: "OK",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      return Promise.resolve(response);
-    }) as typeof fetch;
+  afterEach(() => {
+    global.fetch = originalFetch; // Restore original fetch after each test
   });
 
   test("renders components correctly on initial load", () => {
@@ -132,18 +143,13 @@ describe("VendorSearch", () => {
     // Mock the onSearch function to resolve with mockData
     const mockOnSearch = vi.fn().mockResolvedValue(mockData);
 
-  
-    // Mock fetch to return the mockData on search
-    global.fetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockData,
-    });
-  
+    // Replace the fetch mock for this specific test
+    global.fetch = vi.fn(() => Promise.resolve(createMockResponse(mockData))) as typeof fetch;
     render(<VendorSearch 
       isUserLoggedIn={true}
-        vendors={mockData}
-        onSearch={mockOnSearch}
-        lastSearchTerm="" />);
+      vendors={mockData}
+      onSearch={mockOnSearch}
+      lastSearchTerm="" />);
   
     // Simulate user typing in the search box
     const searchInput = screen.getByRole('searchbox');
