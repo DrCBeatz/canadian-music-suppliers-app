@@ -5,6 +5,8 @@ import App from "./App";
 import { describe, test, vi } from "vitest";
 import Modal from "react-modal";
 
+Modal.setAppElement(document.createElement("div"));
+
 type FetchResponseData = {
   detail: string;
   username?: string;
@@ -41,9 +43,6 @@ describe("App", () => {
 
     render(<App />);
 
-    // Log the rendered output before interacting
-    screen.debug();
-
     // Open login modal
     fireEvent.click(screen.getByTestId("navbar-login-button"));
 
@@ -57,9 +56,6 @@ describe("App", () => {
       target: { value: "password123" },
     });
 
-    // Log the rendered output before submitting the form
-    screen.debug();
-
     // Submit login form
     fireEvent.click(screen.getByTestId("modal-login-button"));
 
@@ -67,9 +63,6 @@ describe("App", () => {
     await waitFor(() => {
       expect(screen.getByText("testuser")).toBeInTheDocument();
     });
-
-    // Log the rendered output after the expected change
-    screen.debug();
   });
 
   test("removes username from navbar after logout", async () => {

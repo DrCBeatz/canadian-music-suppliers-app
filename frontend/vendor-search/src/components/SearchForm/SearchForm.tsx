@@ -4,6 +4,7 @@ import "./SearchForm.css";
 
 import { useState } from "react";
 
+
 interface SearchFormProps {
   onSearch: (searchTerm: string) => void;
 }

@@ -16,6 +16,7 @@ const App: React.FC = () => {
   const [username, setUsername] = useState("");
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [lastSearchTerm, setLastSearchTerm] = useState("");
+  const [searchError, setSearchError] = useState("");
 
   const baseApiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -36,9 +37,11 @@ const App: React.FC = () => {
       setVendors(data);
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.error("Error fetching data: ", error);
+        console.error("Failed to fetch vendors: ", error);
+        setSearchError("Failed to load vendors. Please try again.");
       } else {
         console.error("An unexpected error occurred:", error);
+        setSearchError("An unexpected error occureed. Please try again.");
       }
     }
   };
@@ -111,6 +114,8 @@ const App: React.FC = () => {
         vendors={vendors}
         lastSearchTerm={lastSearchTerm}
         onSearch={searchVendors}
+        errorMessage={searchError}
+        clearErrorMessage={() => setSearchError("")}
       />
       <LoginModal
         key={loginModalKey}

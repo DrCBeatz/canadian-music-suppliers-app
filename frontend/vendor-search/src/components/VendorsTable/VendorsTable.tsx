@@ -43,7 +43,6 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
     null | Vendor["suppliers"][0]
   >(null);
 
-  console.log("VendorsTable props - vendors:", vendors, "isUserLoggedIn:", isUserLoggedIn);
 
   useEffect(() => {
     setCurrentSupplier(null);
@@ -72,9 +71,6 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   const closeModal = () => {
     setIsModalOpen(false);
   };
-  console.log("Is User Logged In: ", isUserLoggedIn);
-  console.log("Current Supplier: ", currentSupplier);
-  {console.log("Mapping vendors:", vendors)};        
   return (
     <div>
       <table className="vendors-table">

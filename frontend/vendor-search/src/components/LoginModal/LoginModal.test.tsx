@@ -20,7 +20,8 @@ describe("LoginModal", () => {
     expect(screen.getByPlaceholderText("Password")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Login" })).toBeInTheDocument(); // Adjusted line
   });
-  test("allows entering a username and password", () => {
+
+  test("allows entering a username and password", async () => {
     render(
       <LoginModal
         isOpen={true}
@@ -36,11 +37,11 @@ describe("LoginModal", () => {
       "Password"
     ) as HTMLInputElement;
 
-    fireEvent.change(usernameInput, { target: { value: "testuser" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
+      fireEvent.change(usernameInput, { target: { value: "testuser" } });
+      fireEvent.change(passwordInput, { target: { value: "password123" } });
 
-    expect(usernameInput.value).toBe("testuser");
-    expect(passwordInput.value).toBe("password123");
+      expect(usernameInput.value).toBe("testuser");
+      expect(passwordInput.value).toBe("password123");
   });
 
   test("submits the form with username and password", async () => {
@@ -68,14 +69,15 @@ describe("LoginModal", () => {
     const passwordInput = screen.getByPlaceholderText("Password");
     const loginButton = screen.getByRole("button", { name: "Login" });
 
-    fireEvent.change(usernameInput, { target: { value: "testuser" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
+    await act(async () => {
+      fireEvent.change(usernameInput, { target: { value: "testuser" } });
+      fireEvent.change(passwordInput, { target: { value: "password123" } });
+      await vi.runAllTimers();
+    });
 
-    // Use act to wrap async operations
     await act(async () => {
       fireEvent.click(loginButton);
     });
-
     await vi.runAllTimers();
 
     expect(global.fetch).toHaveBeenCalledWith(
@@ -87,10 +89,12 @@ describe("LoginModal", () => {
     );
     expect(onLoginSuccess).toHaveBeenCalled();
 
-    vi.restoreAllMocks(); // Clean up mocks after the test
+    await act(async () => {
+      vi.restoreAllMocks(); // Clean up mocks after the test
+    });
   });
 
-  test("calls onRequestClose when close button is clicked", () => {
+  test("calls onRequestClose when close button is clicked", async () => {
     const onRequestClose = vi.fn();
     render(
       <LoginModal
@@ -101,7 +105,10 @@ describe("LoginModal", () => {
     );
 
     const closeButton = screen.getByRole("button", { name: "Close" });
-    fireEvent.click(closeButton);
+    await act(async () => {
+      fireEvent.click(closeButton);
+      await vi.runAllTimers();
+    });
 
     expect(onRequestClose).toHaveBeenCalled();
   });
@@ -144,7 +151,7 @@ describe("LoginModal", () => {
   //   vi.restoreAllMocks();
   // });
 
-  test("clears inputs when the modal is closed or after successful login", () => {
+  test("clears inputs when the modal is closed or after successful login", async () => {
     const resetForm = vi.fn();
 
     // Mock onRequestClose and onLoginSuccess to directly call resetForm
@@ -163,14 +170,20 @@ describe("LoginModal", () => {
     // Enter values in the inputs
     const usernameInput = screen.getByPlaceholderText("Username");
     const passwordInput = screen.getByPlaceholderText("Password");
-    fireEvent.change(usernameInput, { target: { value: "testuser" } });
-    fireEvent.change(passwordInput, { target: { value: "password123" } });
+
+    await act(async () => {
+      fireEvent.change(usernameInput, { target: { value: "testuser" } });
+      fireEvent.change(passwordInput, { target: { value: "password123" } });
+      await vi.runAllTimers();
+
+    });
 
     // Simulate closing the modal or successful login
     onRequestCloseMock();
     onLoginSuccessMock();
 
     // Verify if resetForm function was called
+
     expect(resetForm).toHaveBeenCalledTimes(2);
   });
 });

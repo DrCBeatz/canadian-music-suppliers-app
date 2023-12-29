@@ -8,3 +8,10 @@ body {
   max-width: 800px;
   margin: 0 auto;
 }
+
+.vendor-search__error-message {
+  color: red;
+  margin: 10px 0;
+  text-align: center;
+  font-weight: bold;
+}
