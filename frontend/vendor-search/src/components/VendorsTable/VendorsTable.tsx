@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import "./VendorsTable.css";
 import "./VendorsTableModal.css";
+import ToolTip from "../ToolTip/ToolTip";
 
 export interface Supplier {
   name: string;
@@ -43,7 +44,6 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
     null | Vendor["suppliers"][0]
   >(null);
 
-
   useEffect(() => {
     setCurrentSupplier(null);
   }, [vendors]);
@@ -82,48 +82,54 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {vendors.map((vendor) => ( // ***
-            <tr className="vendors-table__row" key={vendor.id}>
-              <td className="vendors-table__cell">{vendor.name}</td>
-              <td className="vendors-table__cell">
-                {vendor.suppliers.flatMap((supplier, index, array) => {
-                  const elements = [];
-                  if (
-                    supplier.primary_contact_name ||
-                    supplier.primary_contact_email ||
-                    supplier.website ||
-                    supplier.phone
-                  ) {
-                    elements.push(
-                      <span
-                        key={supplier.name}
-                        onClick={() => openModal(supplier)}
-                        style={{
-                          cursor: "pointer",
-                          color: "blue",
-                          textDecoration: "underline",
-                        }}
-                      >
-                        {supplier.name}
-                      </span>
-                    );
-                  } else {
-                    elements.push(supplier.name);
-                  }
+          {vendors.map(
+            (
+              vendor // ***
+            ) => (
+              <tr className="vendors-table__row" key={vendor.id}>
+                <td className="vendors-table__cell">{vendor.name}</td>
+                <td className="vendors-table__cell">
+                  {vendor.suppliers.flatMap((supplier, index, array) => {
+                    const elements = [];
+                    if (
+                      supplier.primary_contact_name ||
+                      supplier.primary_contact_email ||
+                      supplier.website ||
+                      supplier.phone
+                    ) {
+                      elements.push(
+                        <span
+                          key={supplier.name}
+                          onClick={() => openModal(supplier)}
+                          style={{
+                            cursor: "pointer",
+                            color: "blue",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          {supplier.name}
+                        </span>
+                      );
+                    } else {
+                      elements.push(supplier.name);
+                    }
 
-                  // If it's not the last supplier, append a comma and a space
-                  if (index !== array.length - 1) {
-                    elements.push(", ");
-                  }
-                  return elements;
-                })}
-              </td>
+                    // If it's not the last supplier, append a comma and a space
+                    if (index !== array.length - 1) {
+                      elements.push(", ");
+                    }
+                    return elements;
+                  })}
+                </td>
 
-              <td className="vendors-table__cell">
-                {vendor.categories.map((category) => category.name).join(", ")}
-              </td>
-            </tr>
-          ))}
+                <td className="vendors-table__cell">
+                  {vendor.categories
+                    .map((category) => category.name)
+                    .join(", ")}
+                </td>
+              </tr>
+            )
+          )}
         </tbody>
       </table>
 
@@ -188,8 +194,28 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
             )}
             {renderField("Accounting Number", currentSupplier.account_number)}
             {renderField("Account Active", currentSupplier.account_active)}
-            {renderField("Website Username", currentSupplier.website_username)}
-            {renderField("Website Passwrod", currentSupplier.website_password)}
+            <ToolTip
+              content={
+                <>
+                  <p>
+                    <strong className={"tooltip__content--strong"}>
+                      Username:
+                    </strong>{" "}
+                    {currentSupplier.website_username}
+                  </p>
+                  <p>
+                    <strong className={"tooltip__content--strong"}>
+                      Password:
+                    </strong>{" "}
+                    {currentSupplier.website_password}
+                  </p>
+                </>
+              }
+            >
+              <a className="vendors-table__modal-credentials-link">
+                Show Website Credentials
+              </a>
+            </ToolTip>
           </>
         )}
 
