@@ -4,6 +4,34 @@ import pytest
 from cmsa.models import Supplier, Category, Vendor, Contact
 from cmsa.serializers import SupplierSerializer, CategorySerializer, VendorSerializer
 
+# fixtures
+
+
+@pytest.fixture
+def contact_primary():
+    return Contact.objects.create(
+        name="John Primary", email="johnprimary@example.com", primary_contact=True
+    )
+
+
+@pytest.fixture
+def contact_accounting():
+    return Contact.objects.create(
+        name="Jane Accounting",
+        email="janeaccounting@example.com",
+        role="Accounting Contact",
+    )
+
+
+@pytest.fixture
+def contact_additional():
+    return Contact.objects.create(
+        name="Jack Additional", email="jackadditional@example.com"
+    )
+
+
+# tests
+
 
 @pytest.mark.django_db
 def test_valid_supplier_serializer():
@@ -77,3 +105,48 @@ def test_vendor_serializer_empty_data():
 
     assert not serializer.is_valid()
     assert set(serializer.errors.keys()) == {"name"}
+
+
+@pytest.mark.django_db
+def test_supplier_with_additional_contacts(
+    contact_primary, contact_accounting, contact_additional
+):
+    supplier = Supplier.objects.create(name="Supplier with Additional")
+    supplier.contacts.add(contact_primary, contact_accounting, contact_additional)
+    serializer = SupplierSerializer(supplier)
+
+    data = serializer.data
+
+    assert data["name"] == "Supplier with Additional"
+    assert data["primary_contact_name"] == "John Primary"
+    assert len(data["additional_contacts"]) == 1
+    assert data["additional_contacts"][0]["name"] == "Jack Additional"
+
+
+@pytest.mark.django_db
+def test_supplier_without_additional_contacts(contact_primary, contact_accounting):
+    supplier = Supplier.objects.create(name="Supplier without Additional")
+    supplier.contacts.add(contact_primary, contact_accounting)
+    serializer = SupplierSerializer(supplier)
+
+    data = serializer.data
+
+    assert data["name"] == "Supplier without Additional"
+    assert data["primary_contact_name"] == "John Primary"
+    assert len(data["additional_contacts"]) == 0
+
+
+@pytest.mark.django_db
+def test_supplier_serializer_all_contact_types(
+    contact_primary, contact_accounting, contact_additional
+):
+    supplier = Supplier.objects.create(name="Supplier All Contacts")
+    supplier.contacts.add(contact_primary, contact_accounting, contact_additional)
+    serializer = SupplierSerializer(supplier)
+
+    data = serializer.data
+
+    assert data["primary_contact_name"] == "John Primary"
+    assert data["accounting_contact"] == "Jane Accounting"
+    assert len(data["additional_contacts"]) == 1
+    assert data["additional_contacts"][0]["name"] == "Jack Additional"

@@ -1,7 +1,14 @@
 # cmsa/serializers.py
 
 from rest_framework import serializers
-from .models import Vendor, Supplier, Category
+from .models import Vendor, Supplier, Category, Contact
+from django.db import models
+
+
+class ContactSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contact
+        fields = ["id", "name", "email", "role"]
 
 
 class SupplierSerializer(serializers.ModelSerializer):
@@ -10,6 +17,7 @@ class SupplierSerializer(serializers.ModelSerializer):
     accounting_email = serializers.SerializerMethodField()
     accounting_contact = serializers.SerializerMethodField()
     website_password = serializers.SerializerMethodField()
+    additional_contacts = serializers.SerializerMethodField()
 
     class Meta:
         model = Supplier
@@ -30,6 +38,7 @@ class SupplierSerializer(serializers.ModelSerializer):
             "account_active",
             "website_username",
             "website_password",
+            "additional_contacts",
         ]
 
     def get_primary_contact_name(self, obj):
@@ -39,7 +48,7 @@ class SupplierSerializer(serializers.ModelSerializer):
     def get_primary_contact_email(self, obj):
         primary_contact = obj.contacts.filter(primary_contact=True).first()
         return primary_contact.email if primary_contact else None
-    
+
     def get_accounting_contact(self, obj):
         accounting_contact = obj.contacts.filter(role="Accounting Contact").first()
         return accounting_contact.name if accounting_contact else None
@@ -47,9 +56,17 @@ class SupplierSerializer(serializers.ModelSerializer):
     def get_accounting_email(self, obj):
         accounting_email = obj.contacts.filter(role="Accounting Contact").first()
         return accounting_email.email if accounting_email else None
-    
+
+    def get_additional_contacts(self, obj):
+        excluded_contacts = obj.contacts.filter(
+            models.Q(primary_contact=True) | models.Q(role="Accounting Contact")
+        )
+        additional_contacts = obj.contacts.exclude(pk__in=excluded_contacts)
+        return ContactSerializer(additional_contacts, many=True).data
+
     def get_website_password(self, obj):
         return obj.decrypt_password() if obj.website_password else None
+
 
 class SupplierPublicSerializer(serializers.ModelSerializer):
     primary_contact_name = serializers.SerializerMethodField()
@@ -93,6 +110,7 @@ class VendorSerializer(serializers.ModelSerializer):
             "suppliers",
             "categories",
         ]
+
 
 class VendorPublicSerializer(serializers.ModelSerializer):
     suppliers = SupplierPublicSerializer(many=True, read_only=True)
