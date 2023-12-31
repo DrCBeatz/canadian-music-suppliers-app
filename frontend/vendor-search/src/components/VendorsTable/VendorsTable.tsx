@@ -5,6 +5,13 @@ import "./VendorsTable.css";
 import "./VendorsTableModal.css";
 import ToolTip from "../ToolTip/ToolTip";
 
+export interface Contact {
+  id: number;
+  name: string;
+  email?: string;
+  role?: string;
+}
+
 export interface Supplier {
   name: string;
   primary_contact_name?: string;
@@ -21,6 +28,7 @@ export interface Supplier {
   account_active?: boolean;
   website_username?: string;
   website_password?: string;
+  additional_contacts?: Contact[];
 }
 
 export interface Vendor {
@@ -63,6 +71,27 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
     return null;
   };
 
+  const renderAdditionalContacts = (contacts?: Contact[]) => {
+    if (!contacts || contacts.length === 0) return null;
+    return (
+      <div className="vendors_table__additional-contacts">
+        <strong>Additional Contacts:</strong>
+        <ul className="vendors-table__additional-contacts__list">
+          {contacts.map((contact) => (
+            <li
+              key={contact.id}
+              className="vendors-table__additional-contacts__list-item"
+            >
+              <strong>Name: </strong>
+              {contact.name} - <strong>Email: </strong>
+              {contact.email} - <strong>Role: </strong>({contact.role})
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   const openModal = (supplier: Vendor["suppliers"][0]) => {
     setCurrentSupplier(supplier);
     setIsModalOpen(true);
@@ -84,7 +113,7 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
         <tbody>
           {vendors.map(
             (
-              vendor // ***
+              vendor 
             ) => (
               <tr className="vendors-table__row" key={vendor.id}>
                 <td className="vendors-table__cell">{vendor.name}</td>
@@ -216,6 +245,7 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
                 Show Website Credentials
               </a>
             </ToolTip>
+            {renderAdditionalContacts(currentSupplier?.additional_contacts)}
           </>
         )}
 

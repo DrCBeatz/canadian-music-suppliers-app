@@ -1,4 +1,5 @@
 /* VendorsTable.css */
+
 .vendors-table {
   border: 1px solid #ddd;
   width: 100%;
@@ -27,25 +28,40 @@
 }
 
 .vendors-table__modal-content {
-  overflow-y: auto; 
-  max-height: 80vh; 
-  resize: both; 
-  overflow: auto; 
+  overflow-y: auto;
+  max-height: 80vh;
+  resize: both;
+  overflow: auto;
 }
 
 .vendors-table__modal-credentials-link {
-  color: #2774c7; 
+  color: #2774c7;
   font-weight: bold;
-  font-size: 1.1rem; 
+  font-size: 1.1rem;
   cursor: pointer;
-  margin: 1rem 0; 
-  padding: 0.2rem 0; 
-  border-bottom: 2px solid transparent; 
+  margin: 1rem 0;
+  padding: 0.2rem 0;
+  border-bottom: 2px solid transparent;
   transition: color 0.3s ease-in-out, border-color 0.3s ease-in-out;
 }
 
 .vendors-table__modal-credentials-link:hover {
-  color: #0056b3; 
+  color: #0056b3;
   border-bottom-color: #0056b3;
 }
 
+.vendors_table__additional-contacts {
+  margin-top: 1em;
+  margin-bottom: 1em;
+  padding: 0;
+}
+
+.vendors-table__additional-contacts__list {
+  font-size: 0.9rem;
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.vendors-table__additional-contacts__list-item {
+  padding: 0.2rem 0;
+}
