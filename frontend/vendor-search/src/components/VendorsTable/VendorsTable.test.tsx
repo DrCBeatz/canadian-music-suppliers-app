@@ -27,6 +27,52 @@ const mockVendors: Vendor[] = [
     ],
     categories: [{ name: "Category A1" }, { name: "Category A2" }],
   },
+  {
+    id: 2,
+    name: "Vendor B",
+    suppliers: [
+      {
+        name: "Supplier B1",
+        primary_contact_name: "Jane Doe",
+        primary_contact_email: "jane@example.com",
+        website: "http://example.com",
+        phone: "123-456-7890",
+        minimum_order_amount: "100",
+        notes: "Special instructions here",
+        shipping_fees: "5",
+        max_delivery_time: "48h",
+        accounting_email: "accounting@example.com",
+        accounting_contact: "Jim Doe",
+        account_number: "1234567890",
+        account_active: true,
+        additional_contacts: [
+          {
+            id: 1,
+            name: "Contact B1",
+            email: "contactb1@example.com",
+            role: "Role B1",
+          },
+        ],
+      },
+      {
+        name: "Supplier B2",
+        primary_contact_name: "Jane Doe",
+        primary_contact_email: "jane@example.com",
+        website: "http://example.com",
+        phone: "123-456-7890",
+        minimum_order_amount: "100",
+        notes: "Special instructions here",
+        shipping_fees: "5",
+        max_delivery_time: "48h",
+        accounting_email: "accounting@example.com",
+        accounting_contact: "Jim Doe",
+        account_number: "1234567890",
+        account_active: true,
+        additional_contacts: [], // No additional contacts
+      },
+    ],
+    categories: [{ name: "Category B1" }],
+  },
 ];
 
 describe("VendorsTable", () => {
@@ -117,6 +163,33 @@ describe("VendorsTable with isUserLoggedIn false", () => {
       expect(screen.queryByText(/Accounting Contact:/)).not.toBeInTheDocument();
       expect(screen.queryByText(/Accounting Number:/)).not.toBeInTheDocument();
       expect(screen.queryByText(/Account Active:/)).not.toBeInTheDocument();
+    });
+  });
+});
+
+describe("VendorsTable with additional contacts", () => {
+  beforeEach(() => {
+    render(<VendorsTable vendors={mockVendors} isUserLoggedIn={true} />);
+  });
+
+  test("renders additional contacts when present", async () => {
+    fireEvent.click(screen.getByText("Supplier B1")); // Open the modal for a supplier with additional contacts
+
+    await waitFor(() => {
+      expect(screen.getByText(/Contact B1/)).toBeInTheDocument();
+      expect(screen.getByText(/contactb1@example.com/)).toBeInTheDocument();
+      expect(screen.getByText(/Role B1/)).toBeInTheDocument();
+    });
+  });
+
+  test("does not render additional contacts section when absent", async () => {
+    fireEvent.click(screen.getByText("Supplier B2")); // Open the modal for a supplier without additional contacts
+
+    await waitFor(() => {
+      // Ensure the additional contacts section is not rendered
+      expect(
+        screen.queryByText("Additional Contacts:")
+      ).not.toBeInTheDocument();
     });
   });
 });

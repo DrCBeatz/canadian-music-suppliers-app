@@ -74,7 +74,7 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   const renderAdditionalContacts = (contacts?: Contact[]) => {
     if (!contacts || contacts.length === 0) return null;
     return (
-      <div className="vendors_table__additional-contacts">
+      <div className="vendors-table__additional-contacts">
         <strong>Additional Contacts:</strong>
         <ul className="vendors-table__additional-contacts__list">
           {contacts.map((contact) => (
@@ -111,54 +111,48 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {vendors.map(
-            (
-              vendor 
-            ) => (
-              <tr className="vendors-table__row" key={vendor.id}>
-                <td className="vendors-table__cell">{vendor.name}</td>
-                <td className="vendors-table__cell">
-                  {vendor.suppliers.flatMap((supplier, index, array) => {
-                    const elements = [];
-                    if (
-                      supplier.primary_contact_name ||
-                      supplier.primary_contact_email ||
-                      supplier.website ||
-                      supplier.phone
-                    ) {
-                      elements.push(
-                        <span
-                          key={supplier.name}
-                          onClick={() => openModal(supplier)}
-                          style={{
-                            cursor: "pointer",
-                            color: "blue",
-                            textDecoration: "underline",
-                          }}
-                        >
-                          {supplier.name}
-                        </span>
-                      );
-                    } else {
-                      elements.push(supplier.name);
-                    }
+          {vendors.map((vendor) => (
+            <tr className="vendors-table__row" key={vendor.id}>
+              <td className="vendors-table__cell">{vendor.name}</td>
+              <td className="vendors-table__cell">
+                {vendor.suppliers.flatMap((supplier, index, array) => {
+                  const elements = [];
+                  if (
+                    supplier.primary_contact_name ||
+                    supplier.primary_contact_email ||
+                    supplier.website ||
+                    supplier.phone
+                  ) {
+                    elements.push(
+                      <span
+                        key={supplier.name}
+                        onClick={() => openModal(supplier)}
+                        style={{
+                          cursor: "pointer",
+                          color: "blue",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        {supplier.name}
+                      </span>
+                    );
+                  } else {
+                    elements.push(supplier.name);
+                  }
 
-                    // If it's not the last supplier, append a comma and a space
-                    if (index !== array.length - 1) {
-                      elements.push(", ");
-                    }
-                    return elements;
-                  })}
-                </td>
+                  // If it's not the last supplier, append a comma and a space
+                  if (index !== array.length - 1) {
+                    elements.push(", ");
+                  }
+                  return elements;
+                })}
+              </td>
 
-                <td className="vendors-table__cell">
-                  {vendor.categories
-                    .map((category) => category.name)
-                    .join(", ")}
-                </td>
-              </tr>
-            )
-          )}
+              <td className="vendors-table__cell">
+                {vendor.categories.map((category) => category.name).join(", ")}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
 
