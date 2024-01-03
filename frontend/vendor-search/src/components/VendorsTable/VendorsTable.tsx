@@ -56,6 +56,11 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
     setCurrentSupplier(null);
   }, [vendors]);
 
+  const shouldShowToolTip = (supplier: Supplier) => {
+    return (
+      isUserLoggedIn && supplier.website_username && supplier.website_password
+    );
+  };
   const renderField = (
     label: string,
     value: string | boolean | null | undefined
@@ -217,28 +222,31 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
             )}
             {renderField("Accounting Number", currentSupplier.account_number)}
             {renderField("Account Active", currentSupplier.account_active)}
-            <ToolTip
-              content={
-                <>
-                  <p>
-                    <strong className={"tooltip__content--strong"}>
-                      Username:
-                    </strong>{" "}
-                    {currentSupplier.website_username}
-                  </p>
-                  <p>
-                    <strong className={"tooltip__content--strong"}>
-                      Password:
-                    </strong>{" "}
-                    {currentSupplier.website_password}
-                  </p>
-                </>
-              }
-            >
-              <a className="vendors-table__modal-credentials-link">
-                Show Website Credentials
-              </a>
-            </ToolTip>
+
+            {currentSupplier && shouldShowToolTip(currentSupplier) && (
+              <ToolTip
+                content={
+                  <>
+                    <p>
+                      <strong className={"tooltip__content--strong"}>
+                        Username:
+                      </strong>{" "}
+                      {currentSupplier.website_username}
+                    </p>
+                    <p>
+                      <strong className={"tooltip__content--strong"}>
+                        Password:
+                      </strong>{" "}
+                      {currentSupplier.website_password}
+                    </p>
+                  </>
+                }
+              >
+                <a className="vendors-table__modal-credentials-link">
+                  Show Website Credentials
+                </a>
+              </ToolTip>
+            )}
             {renderAdditionalContacts(currentSupplier?.additional_contacts)}
           </>
         )}
