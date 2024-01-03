@@ -73,6 +73,47 @@ const mockVendors: Vendor[] = [
     ],
     categories: [{ name: "Category B1" }],
   },
+  {
+    id: 1,
+    name: "Vendor C",
+    suppliers: [
+      {
+        name: "Supplier With Credentials",
+        primary_contact_name: "John Doe",
+        primary_contact_email: "john@example.com",
+        website: "http://example.com",
+        phone: "123-456-7890",
+        minimum_order_amount: "100",
+        notes: "Special instructions here",
+        shipping_fees: "5",
+        max_delivery_time: "48h",
+        accounting_email: "accounting@example.com",
+        accounting_contact: "Jane Doe",
+        account_number: "1234567890",
+        account_active: true,
+        website_username: "user123",
+        website_password: "pass123",
+      },
+      {
+        name: "Supplier Without Credentials",
+        primary_contact_name: "John Doe",
+        primary_contact_email: "john@example.com",
+        website: "http://example.com",
+        phone: "123-456-7890",
+        minimum_order_amount: "100",
+        notes: "Special instructions here",
+        shipping_fees: "5",
+        max_delivery_time: "48h",
+        accounting_email: "accounting@example.com",
+        accounting_contact: "Jane Doe",
+        account_number: "1234567890",
+        account_active: true,
+        website_username: "",
+        website_password: "",
+      },
+    ],
+    categories: [{ name: "Category C1" }, { name: "Category C2" }],
+  },
 ];
 
 describe("VendorsTable", () => {
@@ -190,6 +231,47 @@ describe("VendorsTable with additional contacts", () => {
       expect(
         screen.queryByText("Additional Contacts:")
       ).not.toBeInTheDocument();
+    });
+  });
+});
+
+describe("VendorsTable with Tooltip Visibility", () => {
+  test("renders ToolTip when credentials are present and user is logged in", async () => {
+    render(<VendorsTable vendors={mockVendors} isUserLoggedIn={true} />);
+
+    // Click on the supplier with credentials to open the modal
+    fireEvent.click(screen.getByText("Supplier With Credentials"));
+
+    await waitFor(() => {
+      // Check for a specific part of the ToolTip content
+      expect(screen.getByText(/Username:/)).toBeInTheDocument();
+      expect(screen.getByText(/Password:/)).toBeInTheDocument();
+    });
+  });
+
+  test("does not render ToolTip when credentials are absent", async () => {
+    render(<VendorsTable vendors={mockVendors} isUserLoggedIn={true} />);
+
+    // Click on the supplier without credentials to open the modal
+    fireEvent.click(screen.getByText("Supplier Without Credentials"));
+
+    await waitFor(() => {
+      // Ensure the ToolTip content is not rendered
+      expect(screen.queryByText(/Username:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Password:/)).not.toBeInTheDocument();
+    });
+  });
+
+  test("does not render ToolTip when user is not logged in", async () => {
+    render(<VendorsTable vendors={mockVendors} isUserLoggedIn={false} />);
+
+    // Click on the supplier with credentials to open the modal
+    fireEvent.click(screen.getByText("Supplier With Credentials"));
+
+    await waitFor(() => {
+      // Ensure the ToolTip content is not rendered
+      expect(screen.queryByText(/Username:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Password:/)).not.toBeInTheDocument();
     });
   });
 });
