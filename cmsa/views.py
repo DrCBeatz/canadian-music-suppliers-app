@@ -12,8 +12,10 @@ from .serializers import (
 )
 from django.db.models import Q
 from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
+@ensure_csrf_cookie
 def frontend(request):
     return render(request, "frontend/index.html")
 
