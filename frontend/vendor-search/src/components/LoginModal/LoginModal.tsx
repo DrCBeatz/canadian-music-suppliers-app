@@ -28,10 +28,11 @@ const LoginModal: React.FC<LoginModalProps> = ({
     setErrorMessage("");
     setShowErrorMessage(false);
   };
+
   const handleLogin = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    const csrfToken = getCsrfToken();
+    const csrfToken = getCsrfToken(); // Function to get the CSRF token from the cookies
 
     const apiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -40,15 +41,14 @@ const LoginModal: React.FC<LoginModalProps> = ({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-CSRFToken": csrfToken,
+          "X-CSRFToken": csrfToken, // Explicitly setting the CSRF token in the request header
         },
-        credentials: "include",
+        credentials: "include", // This is important to ensure cookies are sent with the request
         body: JSON.stringify({ username, password }),
       });
 
       if (response.ok) {
         resetForm();
-
         setShowErrorMessage(false);
         setTimeout(() => {
           setErrorMessage("");
@@ -64,11 +64,13 @@ const LoginModal: React.FC<LoginModalProps> = ({
       console.error("Network error:", error);
     }
   };
+
   useEffect(() => {
     if (!isOpen) {
       resetForm();
     }
   }, [isOpen]);
+
   return (
     <Modal
       isOpen={isOpen}
