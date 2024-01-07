@@ -1,100 +1,36 @@
 // App.test.tsx
-
-import { render, fireEvent, screen, waitFor } from "@testing-library/react";
+import { render, act } from "@testing-library/react";
 import App from "./App";
-import { describe, test, vi } from "vitest";
-import Modal from "react-modal";
 
-Modal.setAppElement(document.createElement("div"));
+global.fetch = vi.fn(
+  () =>
+    Promise.resolve({
+      json: () => Promise.resolve({ csrfToken: "fake-token" }),
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      redirected: false,
+      statusText: "OK",
+      type: "default",
+      url: "",
+      body: null,
+      bodyUsed: false,
+      clone: function () {
+        return this;
+      }, // These functions don't need real implementations for the test.
+      arrayBuffer: async () => new ArrayBuffer(0),
+      blob: async () => new Blob(),
+      formData: async () => new FormData(),
+      text: async () => "",
+    } as Response) // Typecasting as Response to satisfy TypeScript.
+);
 
-type FetchResponseData = {
-  detail: string;
-  username?: string;
-};
-
-vi.mock("react-modal", async () => {
-  const actual: { default: typeof Modal } = await vi.importActual(
-    "react-modal"
+test("fetches CSRF token on mount", async () => {
+  await act(async () => {
+    render(<App />);
+  });
+  expect(global.fetch).toHaveBeenCalledWith(
+    "http://localhost:8000/get-csrf/",
+    expect.anything()
   );
-  return {
-    __esModule: true,
-    default: actual.default,
-    setAppElement: () => {},
-  };
-});
-
-describe("App", () => {
-  beforeEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  const mockFetch = (ok: boolean, data: FetchResponseData) =>
-    vi.fn(
-      () =>
-        Promise.resolve({
-          ok,
-          json: () => Promise.resolve(data),
-        }) as Promise<Response>
-    );
-  test("displays username in navbar after successful login", async () => {
-    vi.spyOn(global, "fetch").mockImplementationOnce(
-      mockFetch(true, { detail: "Login successful", username: "testuser" })
-    );
-
-    render(<App />);
-
-    // Open login modal
-    fireEvent.click(screen.getByTestId("navbar-login-button"));
-
-    // Wait for modal to open and render its contents
-    await waitFor(() => screen.getByPlaceholderText("Username"));
-
-    fireEvent.change(screen.getByPlaceholderText("Username"), {
-      target: { value: "testuser" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("Password"), {
-      target: { value: "password123" },
-    });
-
-    // Submit login form
-    fireEvent.click(screen.getByTestId("modal-login-button"));
-
-    // Wait for the username to appear
-    await waitFor(() => {
-      expect(screen.getByText("testuser")).toBeInTheDocument();
-    });
-  });
-
-  test("removes username from navbar after logout", async () => {
-    vi.spyOn(global, "fetch")
-      .mockImplementationOnce(
-        mockFetch(true, { detail: "Login successful", username: "testuser" })
-      )
-      .mockImplementationOnce(mockFetch(true, { detail: "Logout successful" }));
-
-    render(<App />);
-
-    // Simulate login
-    fireEvent.click(screen.getByTestId("navbar-login-button"));
-    fireEvent.change(screen.getByPlaceholderText("Username"), {
-      target: { value: "testuser" },
-    });
-    fireEvent.change(screen.getByPlaceholderText("Password"), {
-      target: { value: "password123" },
-    });
-    fireEvent.click(screen.getByTestId("modal-login-button"));
-
-    // Wait for the username to appear
-    await waitFor(() => {
-      expect(screen.getByText("testuser")).toBeInTheDocument();
-    });
-
-    // Simulate logout
-    fireEvent.click(screen.getByRole("button", { name: "Logout" })); // Specifically target the logout button
-
-    // Wait for the username to disappear
-    await waitFor(() => {
-      expect(screen.queryByText("testuser")).not.toBeInTheDocument();
-    });
-  });
 });

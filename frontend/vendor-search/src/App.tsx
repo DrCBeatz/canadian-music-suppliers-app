@@ -20,6 +20,17 @@ const App: React.FC = () => {
 
   const baseApiUrl = import.meta.env.VITE_API_BASE_URL;
 
+  async function fetchCsrfToken() {
+    const response = await fetch("http://localhost:8000/get-csrf/", {
+      credentials: "include", // Necessary to include cookies
+    });
+    if (response.ok) {
+      const data = await response.json();
+      return data.csrfToken;
+    }
+    throw new Error("Failed to fetch CSRF token");
+  }
+
   const searchVendors = async (searchTerm: string): Promise<void> => {
     setLastSearchTerm(searchTerm);
     try {
@@ -46,10 +57,21 @@ const App: React.FC = () => {
     }
   };
 
+
   useEffect(() => {
     if (process.env.NODE_ENV !== "test") {
       Modal.setAppElement("#root");
     }
+  }, []);
+
+  useEffect(() => {
+    fetchCsrfToken()
+      .then((token) => {
+        console.log(token);
+      })
+      .catch((error) => {
+        console.error("Error fetching CSRF token:", error);
+      });
   }, []);
 
   const openLoginModal = () => setIsLoginModalOpen(true);

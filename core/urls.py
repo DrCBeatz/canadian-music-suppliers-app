@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.urls import path, include
-from .views import login_view, logout_view, ProtectedTestView, SetCsrfTokenView
+from .views import login_view, logout_view, ProtectedTestView, SetCsrfTokenView, get_csrf
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -12,4 +12,5 @@ urlpatterns = [
     path("api/logout/", logout_view, name="logout"),
     path("api/protected/", ProtectedTestView.as_view(), name="protected_test"),
     path("set-csrf/", SetCsrfTokenView.as_view(), name="set_csrf"),
+    path("get-csrf/", get_csrf, name="get_csrf"),
 ]

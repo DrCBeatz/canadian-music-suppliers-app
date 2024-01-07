@@ -64,8 +64,10 @@ const LoginModal: React.FC<LoginModalProps> = ({
       console.error("Network error:", error);
     }
   };
+  console.log(`LoginModal render - isOpen: ${isOpen}`);
 
   useEffect(() => {
+    console.log(`LoginModal useEffect - isOpen changed to: ${isOpen}`);
     if (!isOpen) {
       resetForm();
     }
@@ -73,6 +75,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
   return (
     <Modal
+      data-testid="login-modal"
       isOpen={isOpen}
       closeTimeoutMS={300}
       onRequestClose={onRequestClose}

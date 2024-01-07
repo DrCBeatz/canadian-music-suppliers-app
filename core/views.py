@@ -88,3 +88,7 @@ def logout_view(request):
 class SetCsrfTokenView(APIView):
     def get(self, request, *arts, **kwargs):
         return HttpResponse("CSRF cookie set")
+
+def get_csrf(request):
+    token = get_token(request)
+    return JsonResponse({"csrfToken": token})

@@ -105,6 +105,11 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
+  console.log(
+    `VendorsTable render - vendors count: ${vendors.length}, isUserLoggedIn: ${isUserLoggedIn}`
+  );
+
   return (
     <div>
       <table className="vendors-table">
