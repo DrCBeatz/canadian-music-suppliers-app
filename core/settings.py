@@ -16,6 +16,7 @@ DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
 ALLOWED_HOSTS = [
     "secure-falls-59693-7d816c7f067e.herokuapp.com",
+    "www.canadamusicsuppliers.ca",
     "localhost",
     "127.0.0.1",
     "testserver",
