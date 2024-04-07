@@ -16,7 +16,6 @@ DEBUG = env.bool("DJANGO_DEBUG", default=False)
 
 ALLOWED_HOSTS = [
     "secure-falls-59693-7d816c7f067e.herokuapp.com",
-    "www.canadamusicsuppliers.ca",
     "localhost",
     "127.0.0.1",
     "testserver",
@@ -108,8 +107,6 @@ CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "https://secure-falls-59693-7d816c7f067e.herokuapp.com",
-    "https://www.canadamusicsuppliers.ca",
     "http://localhost:5173",
     "http://127.0.0.1:8000",
     "http://localhost:8000",
@@ -117,8 +114,6 @@ CORS_ALLOWED_ORIGINS = [
 
 
 CORS_ORIGIN_WHITELIST = [
-    "https://secure-falls-59693-7d816c7f067e.herokuapp.com",
-    "https://www.canadamusicsuppliers.ca",
     "http://localhost:5173",
     "http://localhost:8000",
     "http://127.0.0.1:8000",
