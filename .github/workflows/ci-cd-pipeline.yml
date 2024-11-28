@@ -55,6 +55,11 @@ jobs:
           load: true
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
+          
+      - name: Install Docker Compose
+        run: |
+          curl -L "https://github.com/docker/compose/releases/download/v2.10.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
 
       - name: Start Docker Compose services
         run: docker-compose up -d
