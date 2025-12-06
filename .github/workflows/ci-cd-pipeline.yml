@@ -79,6 +79,21 @@ jobs:
       - name: Run frontend tests
         run: npm test
         working-directory: ./frontend/vendor-search
+      
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh   # Installs /usr/local/bin/heroku
+
+      - name: Deploy to Heroku
+        if: success()
+        uses: akhileshns/heroku-deploy@v3.14.15
+        with:
+          heroku_api_key:  ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+          heroku_email:    ${{ secrets.HEROKU_EMAIL }}
+          # If you deploy via Dockerfile/heroku.yml, set these:
+          usedocker: true
+          stack: "container"
 
       - name: Deploy to Heroku
         if: success()
