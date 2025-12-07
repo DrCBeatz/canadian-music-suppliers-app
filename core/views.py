@@ -25,11 +25,25 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.contrib.auth import logout
-
+from rest_framework import serializers
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiResponse
 
 logger = logging.getLogger(__name__)
 
-
+@extend_schema(
+    tags=["auth"],
+    request=inline_serializer(
+        name="LoginRequest",
+        fields={
+            "username": serializers.CharField(),
+            "password": serializers.CharField(),
+        },
+    ),
+    responses={
+        200: OpenApiResponse(description="Login successful"),
+        401: OpenApiResponse(description="Invalid credentials"),
+    },
+)
 @api_view(["POST"])
 @csrf_protect
 def login_view(request):

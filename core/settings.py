@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     "cmsa.apps.CmsaConfig",
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
 ]
 
 MIDDLEWARE = [
@@ -75,6 +77,16 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Canada Music Suppliers API",
+    "DESCRIPTION": "OpenAPI schema for vendors, suppliers, categories, and auth.",
+    "VERSION": "1.0.0",
+    # Who can view /api/schema/* and UI
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "SERVE_INCLUDE_SCHEMA": False,  # UI endpoints will call the schema view by name
 }
 
 

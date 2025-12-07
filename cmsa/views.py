@@ -13,13 +13,29 @@ from .serializers import (
 from django.db.models import Q
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
 
 
 @ensure_csrf_cookie
 def frontend(request):
     return render(request, "frontend/index.html")
 
-
+@extend_schema_view(
+    list=extend_schema(
+        tags=["vendors"],
+        summary="List vendors",
+        parameters=[
+            OpenApiParameter(
+                name="search",
+                description="Search vendors, suppliers, or categories",
+                required=False,
+                type=str,
+                location=OpenApiParameter.QUERY,
+            )
+        ],
+    ),
+    retrieve=extend_schema(tags=["vendors"], summary="Retrieve a vendor"),
+)
 class VendorViewSet(viewsets.ModelViewSet):
     queryset = Vendor.objects.all()
 
