@@ -15,6 +15,7 @@ from django.http import HttpResponseNotAllowed
 from django.middleware.csrf import get_token
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_http_methods
 from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from django.utils.decorators import method_decorator
@@ -92,3 +93,11 @@ class SetCsrfTokenView(APIView):
 def get_csrf(request):
     token = get_token(request)
     return JsonResponse({"csrfToken": token})
+
+@require_http_methods(["GET"])
+def healthz(request):
+    """
+    Liveness probe: just proves the app can serve requests.
+    Returns 200 with a tiny JSON payload.
+    """
+    return JsonResponse({"status": "ok"})
