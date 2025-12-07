@@ -13,6 +13,11 @@ services:
       - DJANGO_SECURE_HSTS_PRELOAD=False
       - DJANGO_SESSION_COOKIE_SECURE=False
       - DJANGO_CSRF_COOKIE_SECURE=False
+      - GUNICORN_CMD_ARGS=--access-logfile - --error-logfile - --log-level info \
+        --access-logformat '{"ts":"%(t)s","level":"INFO","name":"gunicorn.access",\
+        "remote":"%(h)s","method":"%(m)s","path":"%(U)s","query":"%(q)s",\
+        "status":%(s)s,"length":%(B)s,"referer":"%(f)s","agent":"%(a)s",\
+        "request_id":"%({X-Request-ID}i)s"}'
     command: gunicorn core.wsgi -b 0.0.0.0:8000
     volumes:
       - .:/code

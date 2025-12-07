@@ -16,3 +16,4 @@ PyJWT==2.8.0
 marshmallow>=3.13.0,<4.0.0
 drf-spectacular
 drf-spectacular-sidecar
+python-json-logger

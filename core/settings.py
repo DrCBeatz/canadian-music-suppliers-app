@@ -51,6 +51,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.request_logging.RequestLogMiddleware",
+    "core.logging.RequestContextMiddleware",
 ]
 
 AUTH_USER_MODEL = "accounts.CustomUser"
@@ -90,29 +92,50 @@ SPECTACULAR_SETTINGS = {
 }
 
 
+LOG_JSON = env.bool("DJANGO_LOG_JSON", default=False)
+LOG_LEVEL = env.str("DJANGO_LOG_LEVEL", default="INFO")
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+
+    "filters": {
+        "request_context": {
+            "()": "core.logging.RequestContextFilter",
+        },
+    },
+
+    "formatters": {
+    "json": {
+        "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+        "rename_fields": {"levelname": "level", "asctime": "ts"},
+        "fmt": "%(asctime)s %(levelname)s %(name)s %(message)s "
+            "%(request_id)s %(user)s %(path)s %(method)s "
+            "%(status)s %(duration_ms)s",
+        "datefmt": "%Y-%m-%dT%H:%M:%S%z",
+    },
+    },
+    
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "filters": ["request_context"],
+            "formatter": "json" if LOG_JSON else "plain",
         },
     },
+
     "loggers": {
-        "django": {
-            "handlers": ["console"],
-            "level": "ERROR",
-        },
-        "core": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
-        "accounts": {
-            "handlers": ["console"],
-            "level": "DEBUG",
-            "propagate": False,
-        },
+        # Django internals
+        "django": {"handlers": ["console"], "level": "ERROR"},
+        "django.request": {"handlers": ["console"], "level": "ERROR", "propagate": False},
+        # Your apps
+        "core": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "accounts": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        # If you want gunicorn logs to be JSON too:
+        "gunicorn.error": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+        "gunicorn.access": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
+
+        "core.request": {"handlers": ["console"], "level": LOG_LEVEL, "propagate": False},
     },
 }
 
