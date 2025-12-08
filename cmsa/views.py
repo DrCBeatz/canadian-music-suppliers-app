@@ -1,7 +1,7 @@
 # cmsa/views.py
 
-from django.views.generic import TemplateView
 from rest_framework import viewsets
+from django.db.models import Q, Prefetch
 from .models import Vendor, Supplier, Category
 from .serializers import (
     VendorSerializer,
@@ -37,35 +37,39 @@ def frontend(request):
     retrieve=extend_schema(tags=["vendors"], summary="Retrieve a vendor"),
 )
 class VendorViewSet(viewsets.ModelViewSet):
-    queryset = Vendor.objects.all()
+    queryset = Vendor.objects.prefetch_related(
+        "categories",
+        Prefetch(
+            "suppliers",
+            queryset=Supplier.objects.prefetch_related("contacts"),
+        ),
+    )
 
     def get_queryset(self):
-        queryset = Vendor.objects.all()
-        search_term = self.request.query_params.get("search", None)
-        if search_term is not None:
-            queryset = queryset.filter(
+        qs = super().get_queryset()
+        search_term = self.request.query_params.get("search")
+
+        if search_term:
+            qs = qs.filter(
                 Q(name__icontains=search_term)
                 | Q(suppliers__name__icontains=search_term)
                 | Q(categories__name__icontains=search_term)
             ).distinct()
-        return queryset
+
+        return qs
 
     def get_serializer_class(self):
-        if self.request.user.is_authenticated:
-            return VendorSerializer
-        return VendorPublicSerializer
+        return VendorSerializer if self.request.user.is_authenticated else VendorPublicSerializer
+
 
 
 class SupplierViewSet(viewsets.ModelViewSet):
-    queryset = Supplier.objects.all()
+    queryset = Supplier.objects.prefetch_related("contacts")
 
     def get_serializer_class(self):
-        if self.request.user.is_authenticated:
-            return SupplierSerializer
-        return SupplierPublicSerializer
+        return SupplierSerializer if self.request.user.is_authenticated else SupplierPublicSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-

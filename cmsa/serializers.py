@@ -2,8 +2,6 @@
 
 from rest_framework import serializers
 from .models import Vendor, Supplier, Category, Contact
-from django.db import models
-
 
 class ContactSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,7 +9,45 @@ class ContactSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "email", "role"]
 
 
-class SupplierSerializer(serializers.ModelSerializer):
+class SupplierContactsMixin:
+    """
+    Makes contact-derived fields O(1) DB queries per Supplier object.
+    If contacts were prefetched, this becomes 0 DB queries.
+    """
+
+    def _contacts_list(self, obj) -> list[Contact]:
+        cached = getattr(obj, "_contacts_list_cache", None)
+        if cached is not None:
+            return cached
+
+        # Support Prefetch(..., to_attr="prefetched_contacts") if you ever use it
+        if hasattr(obj, "prefetched_contacts"):
+            contacts = list(obj.prefetched_contacts)
+        else:
+            # If queryset used prefetch_related('contacts'), this uses the cache (no DB hit)
+            contacts = list(obj.contacts.all())
+
+        obj._contacts_list_cache = contacts
+        return contacts
+
+    def _contact_parts(self, obj):
+        cached = getattr(obj, "_contact_parts_cache", None)
+        if cached is not None:
+            return cached
+
+        contacts = self._contacts_list(obj)
+        primary = next((c for c in contacts if c.primary_contact), None)
+        accounting = next((c for c in contacts if c.role == "Accounting Contact"), None)
+        additional = [
+            c for c in contacts
+            if (not c.primary_contact) and (c.role != "Accounting Contact")
+        ]
+
+        obj._contact_parts_cache = (primary, accounting, additional)
+        return obj._contact_parts_cache
+
+
+class SupplierSerializer(SupplierContactsMixin, serializers.ModelSerializer):
     primary_contact_name = serializers.SerializerMethodField()
     primary_contact_email = serializers.SerializerMethodField()
     accounting_email = serializers.SerializerMethodField()
@@ -42,54 +78,44 @@ class SupplierSerializer(serializers.ModelSerializer):
         ]
 
     def get_primary_contact_name(self, obj):
-        primary_contact = obj.contacts.filter(primary_contact=True).first()
-        return primary_contact.name if primary_contact else None
+        primary, _, _ = self._contact_parts(obj)
+        return primary.name if primary else None
 
     def get_primary_contact_email(self, obj):
-        primary_contact = obj.contacts.filter(primary_contact=True).first()
-        return primary_contact.email if primary_contact else None
+        primary, _, _ = self._contact_parts(obj)
+        return primary.email if primary else None
 
     def get_accounting_contact(self, obj):
-        accounting_contact = obj.contacts.filter(role="Accounting Contact").first()
-        return accounting_contact.name if accounting_contact else None
+        _, accounting, _ = self._contact_parts(obj)
+        return accounting.name if accounting else None
 
     def get_accounting_email(self, obj):
-        accounting_email = obj.contacts.filter(role="Accounting Contact").first()
-        return accounting_email.email if accounting_email else None
+        _, accounting, _ = self._contact_parts(obj)
+        return accounting.email if accounting else None
 
     def get_additional_contacts(self, obj):
-        excluded_contacts = obj.contacts.filter(
-            models.Q(primary_contact=True) | models.Q(role="Accounting Contact")
-        )
-        additional_contacts = obj.contacts.exclude(pk__in=excluded_contacts)
-        return ContactSerializer(additional_contacts, many=True).data
+        _, _, additional = self._contact_parts(obj)
+        return ContactSerializer(additional, many=True).data
 
     def get_website_password(self, obj):
         return obj.decrypt_password() if obj.website_password else None
 
 
-class SupplierPublicSerializer(serializers.ModelSerializer):
+class SupplierPublicSerializer(SupplierContactsMixin, serializers.ModelSerializer):
     primary_contact_name = serializers.SerializerMethodField()
     primary_contact_email = serializers.SerializerMethodField()
 
     class Meta:
         model = Supplier
-        fields = [
-            "id",
-            "name",
-            "primary_contact_name",
-            "primary_contact_email",
-            "website",
-            "phone",
-        ]
+        fields = ["id", "name", "primary_contact_name", "primary_contact_email", "website", "phone"]
 
     def get_primary_contact_name(self, obj):
-        primary_contact = obj.contacts.filter(primary_contact=True).first()
-        return primary_contact.name if primary_contact else None
+        primary, _, _ = self._contact_parts(obj)
+        return primary.name if primary else None
 
     def get_primary_contact_email(self, obj):
-        primary_contact = obj.contacts.filter(primary_contact=True).first()
-        return primary_contact.email if primary_contact else None
+        primary, _, _ = self._contact_parts(obj)
+        return primary.email if primary else None
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -104,12 +130,7 @@ class VendorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vendor
-        fields = [
-            "id",
-            "name",
-            "suppliers",
-            "categories",
-        ]
+        fields = ["id", "name", "suppliers", "categories"]
 
 
 class VendorPublicSerializer(serializers.ModelSerializer):
@@ -118,9 +139,4 @@ class VendorPublicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vendor
-        fields = [
-            "id",
-            "name",
-            "suppliers",
-            "categories",
-        ]
+        fields = ["id", "name", "suppliers", "categories"]
