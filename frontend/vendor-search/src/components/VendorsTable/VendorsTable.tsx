@@ -57,9 +57,6 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   >(null);
 
   useEffect(() => {
-    // If the results change (new search), clear the current modal supplier.
-    // Optionally you can also close the modal here:
-    // setIsModalOpen(false);
     setCurrentSupplier(null);
   }, [vendors]);
 

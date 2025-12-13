@@ -15,7 +15,7 @@ interface VendorSearchProps {
   lastSearchTerm: string;
   errorMessage: string;
   clearErrorMessage: () => void;
-  isLoading?: boolean; // ✅ ADD (optional so other usages won't break)
+  isLoading?: boolean;
 }
 
 const VendorSearch: React.FC<VendorSearchProps> = ({
@@ -25,7 +25,7 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
   lastSearchTerm,
   errorMessage,
   clearErrorMessage,
-  isLoading = false, // ✅ default
+  isLoading = false,
 }) => {
   useEffect(() => {
     if (isUserLoggedIn && lastSearchTerm) {
