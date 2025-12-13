@@ -41,11 +41,15 @@ export interface Vendor {
 interface VendorsTableProps {
   vendors: Vendor[];
   isUserLoggedIn: boolean;
+  isLoading?: boolean;
+  emptyState?: React.ReactNode;
 }
 
 const VendorsTable: React.FC<VendorsTableProps> = ({
   vendors,
   isUserLoggedIn,
+  isLoading = false,
+  emptyState,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentSupplier, setCurrentSupplier] = useState<
@@ -53,20 +57,23 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   >(null);
 
   useEffect(() => {
+    // If the results change (new search), clear the current modal supplier.
+    // Optionally you can also close the modal here:
+    // setIsModalOpen(false);
     setCurrentSupplier(null);
   }, [vendors]);
 
   const shouldShowToolTip = (supplier: Supplier) => {
     return (
-      isUserLoggedIn && supplier.website_username && supplier.website_password
+      isUserLoggedIn && !!supplier.website_username && !!supplier.website_password
     );
   };
+
   const renderField = (
     label: string,
     value: string | boolean | null | undefined
   ) => {
     if (value || value === false) {
-      // Checks for non-null, non-undefined, and non-empty string. Also, explicitly allows boolean false.
       return (
         <p>
           <strong>{label}:</strong> {value.toString()}
@@ -102,13 +109,7 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
     setIsModalOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  console.log(
-    `VendorsTable render - vendors count: ${vendors.length}, isUserLoggedIn: ${isUserLoggedIn}`
-  );
+  const closeModal = () => setIsModalOpen(false);
 
   return (
     <div>
@@ -120,49 +121,60 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
             <th className="vendors-table__header-cell">Categories</th>
           </tr>
         </thead>
+
         <tbody>
-          {vendors.map((vendor) => (
-            <tr className="vendors-table__row" key={vendor.id}>
-              <td className="vendors-table__cell">{vendor.name}</td>
-              <td className="vendors-table__cell">
-                {vendor.suppliers.flatMap((supplier, index, array) => {
-                  const elements = [];
-                  if (
-                    supplier.primary_contact_name ||
-                    supplier.primary_contact_email ||
-                    supplier.website ||
-                    supplier.phone
-                  ) {
-                    elements.push(
-                      <span
-                        key={supplier.name}
-                        onClick={() => openModal(supplier)}
-                        style={{
-                          cursor: "pointer",
-                          color: "blue",
-                          textDecoration: "underline",
-                        }}
-                      >
-                        {supplier.name}
-                      </span>
-                    );
-                  } else {
-                    elements.push(supplier.name);
-                  }
+          {vendors.length > 0 ? (
+            vendors.map((vendor) => (
+              <tr className="vendors-table__row" key={vendor.id}>
+                <td className="vendors-table__cell">{vendor.name}</td>
 
-                  // If it's not the last supplier, append a comma and a space
-                  if (index !== array.length - 1) {
-                    elements.push(", ");
-                  }
-                  return elements;
-                })}
-              </td>
+                <td className="vendors-table__cell">
+                  {vendor.suppliers.flatMap((supplier, index, array) => {
+                    const elements: React.ReactNode[] = [];
 
-              <td className="vendors-table__cell">
-                {vendor.categories.map((category) => category.name).join(", ")}
+                    const clickable =
+                      supplier.primary_contact_name ||
+                      supplier.primary_contact_email ||
+                      supplier.website ||
+                      supplier.phone;
+
+                    if (clickable) {
+                      elements.push(
+                        <span
+                          key={supplier.name}
+                          onClick={() => openModal(supplier)}
+                          style={{
+                            cursor: "pointer",
+                            color: "blue",
+                            textDecoration: "underline",
+                          }}
+                        >
+                          {supplier.name}
+                        </span>
+                      );
+                    } else {
+                      elements.push(
+                        <span key={supplier.name}>{supplier.name}</span>
+                      );
+                    }
+
+                    if (index !== array.length - 1) elements.push(", ");
+                    return elements;
+                  })}
+                </td>
+
+                <td className="vendors-table__cell">
+                  {vendor.categories.map((category) => category.name).join(", ")}
+                </td>
+              </tr>
+            ))
+          ) : isLoading || emptyState ? (
+            <tr>
+              <td colSpan={3} className="vendors-table__empty-state">
+                {isLoading ? "Loading…" : emptyState}
               </td>
             </tr>
-          ))}
+          ) : null}
         </tbody>
       </table>
 

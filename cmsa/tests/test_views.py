@@ -112,7 +112,13 @@ def test_vendor_search_matches_supplier_name(api_client):
     assert resp.data[0]["suppliers"][0]["name"] == "Coast Music"
 
 @pytest.mark.django_db
-def test_vendor_search_query_count_does_not_scale(api_client):
+@pytest.mark.parametrize("authenticated", [False, True])
+def test_vendor_search_query_count_does_not_scale_both_modes(api_client, authenticated):
+    if authenticated:
+        User = get_user_model()
+        user = User.objects.create_user(username="u", password="p")
+        api_client.force_authenticate(user=user)
+
     cat = Category.objects.create(name="Guitars")
 
     def create_batch(start, n):
@@ -129,21 +135,19 @@ def test_vendor_search_query_count_does_not_scale(api_client):
         with CaptureQueriesContext(connection) as ctx:
             resp = api_client.get("/routes/vendors/?search=Coast")
         assert resp.status_code == 200
-        return len(resp.data), len(ctx)
+        return len(resp.data), len(ctx), resp
 
     create_batch(0, 5)
-    n1, q1 = run()
+    n1, q1, _ = run()
 
     create_batch(5, 45)
-    n2, q2 = run()
+    n2, q2, resp = run()
 
     assert n1 == 5
     assert n2 == 50
-    # Core assertion: queries should stay ~constant even as results grow.
     assert q2 <= q1 + 3
 
-@pytest.mark.django_db
-def test_vendor_search_query_count_authenticated_does_not_scale(api_client):
-    User = get_user_model()
-    user = User.objects.create_user(username="u", password="p")
-    api_client.force_authenticate(user=user)
+    if authenticated:
+        assert "account_active" in resp.data[0]["suppliers"][0]
+    else:
+        assert "account_active" not in resp.data[0]["suppliers"][0]

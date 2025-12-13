@@ -17,6 +17,7 @@ const App: React.FC = () => {
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [lastSearchTerm, setLastSearchTerm] = useState("");
   const [searchError, setSearchError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const baseApiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -33,6 +34,8 @@ const App: React.FC = () => {
 
   const searchVendors = async (searchTerm: string): Promise<void> => {
     setLastSearchTerm(searchTerm);
+    setSearchError("");
+    setIsLoading(true);
     try {
       const response = await fetch(
         `${baseApiUrl}/routes/vendors/?search=${searchTerm}`,
@@ -41,20 +44,14 @@ const App: React.FC = () => {
         }
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const data: Vendor[] = await response.json();
-      setVendors(data);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error("Failed to fetch vendors: ", error);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data: Vendor[] = await response.json();
+    setVendors(data);
+      } catch (e) {
         setSearchError("Failed to load vendors. Please try again.");
-      } else {
-        console.error("An unexpected error occurred:", error);
-        setSearchError("An unexpected error occureed. Please try again.");
+      } finally {
+        setIsLoading(false);
       }
-    }
   };
 
 
@@ -138,6 +135,7 @@ const App: React.FC = () => {
         onSearch={searchVendors}
         errorMessage={searchError}
         clearErrorMessage={() => setSearchError("")}
+        isLoading={isLoading}
       />
       <LoginModal
         key={loginModalKey}

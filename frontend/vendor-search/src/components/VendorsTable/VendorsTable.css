@@ -65,3 +65,21 @@
 .vendors-table__additional-contacts__list-item {
   padding: 0.2rem 0;
 }
+
+.vendors-table__empty-state {
+  padding: 0.9rem 0.75rem;
+  text-align: center;
+
+  color: #444;
+  font-size: 0.95rem;
+  font-weight: 500;
+
+  background: #fff;
+  border-top: 1px solid #ddd;
+}
+
+/* Make the searched term match your blue accent */
+.vendors-table__empty-state-term {
+  color: #2774c7;
+  font-weight: 600;
+}

@@ -74,7 +74,7 @@ const mockVendors: Vendor[] = [
     categories: [{ name: "Category B1" }],
   },
   {
-    id: 1,
+    id: 3,
     name: "Vendor C",
     suppliers: [
       {

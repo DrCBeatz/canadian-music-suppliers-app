@@ -15,6 +15,7 @@ interface VendorSearchProps {
   lastSearchTerm: string;
   errorMessage: string;
   clearErrorMessage: () => void;
+  isLoading?: boolean; // ✅ ADD (optional so other usages won't break)
 }
 
 const VendorSearch: React.FC<VendorSearchProps> = ({
@@ -24,6 +25,7 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
   lastSearchTerm,
   errorMessage,
   clearErrorMessage,
+  isLoading = false, // ✅ default
 }) => {
   useEffect(() => {
     if (isUserLoggedIn && lastSearchTerm) {
@@ -39,10 +41,28 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
     }
   }, [lastSearchTerm]);
 
+  const noResultsMessage =
+    !isLoading && !errorMessage && lastSearchTerm && vendors.length === 0 ? (
+      <>
+        No results for{" "}
+        <span className="vendors-table__empty-state-term">
+          "{lastSearchTerm}"
+        </span>
+        .
+      </>
+    ) : undefined;
+
   return (
     <div className="vendor-search">
       <SearchForm onSearch={onSearch} />
-      <VendorsTable vendors={vendors} isUserLoggedIn={isUserLoggedIn} />
+
+      <VendorsTable
+        vendors={vendors}
+        isUserLoggedIn={isUserLoggedIn}
+        isLoading={isLoading}
+        emptyState={noResultsMessage}
+      />
+
       {errorMessage && (
         <div className="vendor-search__error-message">{errorMessage}</div>
       )}
