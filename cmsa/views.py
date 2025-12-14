@@ -14,7 +14,7 @@ from django.db.models import Q
 from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter
-
+from .pagination import OptionalPageNumberPagination
 
 @ensure_csrf_cookie
 def frontend(request):
@@ -31,12 +31,28 @@ def frontend(request):
                 required=False,
                 type=str,
                 location=OpenApiParameter.QUERY,
-            )
+            ),
+            OpenApiParameter(
+                name="page",
+                description="Page number (enables pagination when provided).",
+                required=False,
+                type=int,
+                location=OpenApiParameter.QUERY,
+            ),
+            OpenApiParameter(
+                name="page_size",
+                description="Page size (enables pagination when provided).",
+                required=False,
+                type=int,
+                location=OpenApiParameter.QUERY,
+            ),
         ],
     ),
     retrieve=extend_schema(tags=["vendors"], summary="Retrieve a vendor"),
 )
 class VendorViewSet(viewsets.ModelViewSet):
+    pagination_class = OptionalPageNumberPagination
+
     queryset = Vendor.objects.prefetch_related(
         "categories",
         Prefetch(
@@ -56,14 +72,14 @@ class VendorViewSet(viewsets.ModelViewSet):
                 | Q(categories__name__icontains=search_term)
             ).distinct()
 
-        return qs
+        return qs.order_by("name")
 
     def get_serializer_class(self):
         return VendorSerializer if self.request.user.is_authenticated else VendorPublicSerializer
 
 
-
 class SupplierViewSet(viewsets.ModelViewSet):
+    pagination_class = OptionalPageNumberPagination
     queryset = Supplier.objects.prefetch_related("contacts")
 
     def get_serializer_class(self):
@@ -71,5 +87,6 @@ class SupplierViewSet(viewsets.ModelViewSet):
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    pagination_class = OptionalPageNumberPagination
     queryset = Category.objects.all()
     serializer_class = CategorySerializer

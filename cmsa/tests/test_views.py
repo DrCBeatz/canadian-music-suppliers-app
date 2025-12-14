@@ -151,3 +151,18 @@ def test_vendor_search_query_count_does_not_scale_both_modes(api_client, authent
         assert "account_active" in resp.data[0]["suppliers"][0]
     else:
         assert "account_active" not in resp.data[0]["suppliers"][0]
+
+@pytest.mark.django_db
+def test_vendor_list_paginated_when_page_param_provided(api_client):
+    Vendor.objects.create(name="Vendor A")
+    Vendor.objects.create(name="Vendor B")
+
+    resp = api_client.get("/routes/vendors/?page=1&page_size=1")
+    assert resp.status_code == 200
+
+    # paginated shape
+    assert "count" in resp.data
+    assert "results" in resp.data
+
+    assert resp.data["count"] == 2
+    assert len(resp.data["results"]) == 1
