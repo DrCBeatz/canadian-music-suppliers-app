@@ -166,3 +166,93 @@ def test_vendor_list_paginated_when_page_param_provided(api_client):
 
     assert resp.data["count"] == 2
     assert len(resp.data["results"]) == 1
+
+@pytest.mark.django_db
+def test_vendor_list_not_paginated_by_default(api_client):
+    Vendor.objects.create(name="Vendor A")
+
+    resp = api_client.get("/routes/vendors/")
+    assert resp.status_code == 200
+
+    # Legacy shape should remain a plain list
+    assert isinstance(resp.data, list)
+    assert resp.data[0]["name"] == "Vendor A"
+
+@pytest.mark.django_db
+def test_vendor_list_paginated_when_page_size_param_provided(api_client):
+    Vendor.objects.create(name="Vendor A")
+    Vendor.objects.create(name="Vendor B")
+
+    resp = api_client.get("/routes/vendors/?page_size=1")
+    assert resp.status_code == 200
+
+    assert isinstance(resp.data, dict)
+    assert set(resp.data.keys()) >= {"count", "next", "previous", "results"}
+    assert resp.data["count"] == 2
+    assert len(resp.data["results"]) == 1
+
+@pytest.mark.django_db
+def test_vendor_list_out_of_range_page_returns_404(api_client):
+    Vendor.objects.create(name="Vendor A")
+    Vendor.objects.create(name="Vendor B")
+
+    resp = api_client.get("/routes/vendors/?page=99&page_size=1")
+    assert resp.status_code == 404
+
+@pytest.mark.django_db
+def test_vendor_list_pagination_has_stable_order(api_client):
+    Vendor.objects.create(name="Vendor B")
+    Vendor.objects.create(name="Vendor A")
+    Vendor.objects.create(name="Vendor C")
+
+    resp = api_client.get("/routes/vendors/?page=1&page_size=2")
+    assert resp.status_code == 200
+
+    names = [v["name"] for v in resp.data["results"]]
+    assert names == ["Vendor A", "Vendor B"]
+
+from urllib.parse import urlparse, parse_qs
+
+@pytest.mark.django_db
+def test_vendor_list_next_link_preserves_page_size_and_search(api_client):
+    # Create enough vendors that "next" exists
+    for i in range(3):
+        Vendor.objects.create(name=f"Vendor {i}")
+
+    resp = api_client.get("/routes/vendors/?search=Vendor&page=1&page_size=1")
+    assert resp.status_code == 200
+    assert resp.data["next"] is not None
+
+    qs = parse_qs(urlparse(resp.data["next"]).query)
+    assert qs["search"] == ["Vendor"]
+    assert qs["page"] == ["2"]
+    assert qs["page_size"] == ["1"]
+
+@pytest.mark.django_db
+def test_vendor_list_page_size_is_capped(api_client):
+    # Need > max_page_size vendors to prove the cap works
+    for i in range(120):
+        Vendor.objects.create(name=f"Vendor {i:03d}")
+
+    resp = api_client.get("/routes/vendors/?page=1&page_size=1000")
+    assert resp.status_code == 200
+
+    assert resp.data["count"] == 120
+    assert len(resp.data["results"]) == 100  # max_page_size from the paginator
+
+@pytest.mark.django_db
+def test_vendor_search_pagination_count_uses_distinct(api_client):
+    cat = Category.objects.create(name="Guitars")
+    supplier1 = Supplier.objects.create(name="Coast Music One")
+    supplier2 = Supplier.objects.create(name="Coast Music Two")
+
+    vendor = Vendor.objects.create(name="Dunlop")
+    vendor.categories.add(cat)
+    vendor.suppliers.add(supplier1, supplier2)
+
+    resp = api_client.get("/routes/vendors/?search=Coast&page=1&page_size=10")
+    assert resp.status_code == 200
+
+    assert resp.data["count"] == 1
+    assert len(resp.data["results"]) == 1
+    assert resp.data["results"][0]["name"] == "Dunlop"    
