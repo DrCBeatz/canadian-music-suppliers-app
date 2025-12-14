@@ -9,6 +9,23 @@ import Modal from "react-modal";
 import { getCsrfToken } from "./utils/csrf";
 import { Vendor } from "./components/VendorsTable/VendorsTable";
 
+type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
+function isPaginated<T>(data: any): data is PaginatedResponse<T> {
+  return (
+    data &&
+    typeof data === "object" &&
+    "results" in data &&
+    Array.isArray((data as any).results) &&
+    typeof (data as any).count === "number"
+  );
+}
+
 const App: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
@@ -18,6 +35,13 @@ const App: React.FC = () => {
   const [lastSearchTerm, setLastSearchTerm] = useState("");
   const [searchError, setSearchError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  const PAGE_SIZE = 25;
+
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
 
   const baseApiUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -32,28 +56,69 @@ const App: React.FC = () => {
     throw new Error("Failed to fetch CSRF token");
   }
 
-  const searchVendors = async (searchTerm: string): Promise<void> => {
+  const searchVendors = async (
+    searchTerm: string,
+    pageToFetch: number = 1
+  ): Promise<void> => {
+    const isNewSearch = searchTerm !== lastSearchTerm;
+
+    // When starting a brand new search term, reset pagination immediately.
+    if (isNewSearch) {
+      setPage(1);
+      setTotalCount(0);
+      setHasNext(false);
+      setHasPrev(false);
+    }
+
     setLastSearchTerm(searchTerm);
     setSearchError("");
     setIsLoading(true);
+
+    // Optional UX improvement: ensures the "Loading…" row appears in the table
+    setVendors([]);
+
     try {
+      const params = new URLSearchParams();
+      if (searchTerm) params.set("search", searchTerm);
+
+      params.set("page", String(pageToFetch));
+      params.set("page_size", String(PAGE_SIZE));
+
       const response = await fetch(
-        `${baseApiUrl}/routes/vendors/?search=${searchTerm}`,
-        {
-          credentials: "include",
-        }
+        `${baseApiUrl}/routes/vendors/?${params.toString()}`,
+        { credentials: "include" }
       );
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data: Vendor[] = await response.json();
-    setVendors(data);
-      } catch (e) {
-        setSearchError("Failed to load vendors. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-  };
 
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        setVendors(data as Vendor[]);
+        setTotalCount((data as Vendor[]).length);
+        setHasNext(false);
+        setHasPrev(false);
+        setPage(1);
+      } else if (isPaginated<Vendor>(data)) {
+        setVendors(data.results);
+        setTotalCount(data.count);
+        setHasNext(Boolean(data.next));
+        setHasPrev(Boolean(data.previous));
+        setPage(pageToFetch);
+      } else {
+        // Defensive fallback
+        setVendors([]);
+        setTotalCount(0);
+        setHasNext(false);
+        setHasPrev(false);
+        setPage(1);
+      }
+    } catch (e) {
+      setSearchError("Failed to load vendors. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (process.env.NODE_ENV !== "test") {
@@ -136,6 +201,19 @@ const App: React.FC = () => {
         errorMessage={searchError}
         clearErrorMessage={() => setSearchError("")}
         isLoading={isLoading}
+        pagination={{
+          page,
+          pageSize: PAGE_SIZE,
+          totalCount,
+          hasNext,
+          hasPrev,
+          onPrev: () => {
+            if (page > 1) searchVendors(lastSearchTerm, page - 1);
+          },
+          onNext: () => {
+            if (hasNext) searchVendors(lastSearchTerm, page + 1);
+          },
+        }}
       />
       <LoginModal
         key={loginModalKey}

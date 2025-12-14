@@ -5,6 +5,9 @@ import "./VendorSearch.css";
 import SearchForm from "../SearchForm/SearchForm";
 import VendorsTable, { Vendor } from "../VendorsTable/VendorsTable";
 import Modal from "react-modal";
+import PaginationControls, {
+  PaginationControlsProps,
+} from "../PaginationControls/PaginationControls";
 
 Modal.setAppElement(document.createElement("div"));
 
@@ -16,6 +19,7 @@ interface VendorSearchProps {
   errorMessage: string;
   clearErrorMessage: () => void;
   isLoading?: boolean;
+  pagination?: Omit<PaginationControlsProps, "isLoading">;
 }
 
 const VendorSearch: React.FC<VendorSearchProps> = ({
@@ -26,6 +30,7 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
   errorMessage,
   clearErrorMessage,
   isLoading = false,
+  pagination
 }) => {
   useEffect(() => {
     if (isUserLoggedIn && lastSearchTerm) {
@@ -53,21 +58,25 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
     ) : undefined;
 
   return (
-    <div className="vendor-search">
-      <SearchForm onSearch={onSearch} />
+  <div className="vendor-search">
+    <SearchForm onSearch={onSearch} />
 
-      <VendorsTable
-        vendors={vendors}
-        isUserLoggedIn={isUserLoggedIn}
-        isLoading={isLoading}
-        emptyState={noResultsMessage}
-      />
+    <VendorsTable
+      vendors={vendors}
+      isUserLoggedIn={isUserLoggedIn}
+      isLoading={isLoading}
+      emptyState={noResultsMessage}
+    />
 
-      {errorMessage && (
-        <div className="vendor-search__error-message">{errorMessage}</div>
-      )}
-    </div>
-  );
+    {pagination && !errorMessage && (
+      <PaginationControls {...pagination} isLoading={isLoading} />
+    )}
+
+    {errorMessage && (
+      <div className="vendor-search__error-message">{errorMessage}</div>
+    )}
+  </div>
+);
 };
 
 export default VendorSearch;
