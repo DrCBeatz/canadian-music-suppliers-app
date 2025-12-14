@@ -275,3 +275,48 @@ describe("VendorsTable with Tooltip Visibility", () => {
     });
   });
 });
+
+describe("VendorsTable loading & empty state rendering", () => {
+  beforeAll(() => {
+    Modal.setAppElement(document.createElement("div"));
+  });
+
+  test("shows Loading… row when isLoading=true and vendors is empty", () => {
+    render(
+      <VendorsTable vendors={[]} isUserLoggedIn={false} isLoading={true} />
+    );
+
+    // Use /Loading/ so you don't have to match the exact ellipsis character
+    expect(screen.getByText(/Loading/)).toBeInTheDocument();
+  });
+
+  test("shows emptyState when provided and vendors is empty (not loading)", () => {
+    render(
+      <VendorsTable
+        vendors={[]}
+        isUserLoggedIn={false}
+        isLoading={false}
+        emptyState={
+          <>
+            No results for <span>"fender"</span>.
+          </>
+        }
+      />
+    );
+
+    expect(screen.getByText(/No results for/i)).toBeInTheDocument();
+    expect(screen.getByText(/"fender"/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Loading/)).not.toBeInTheDocument();
+  });
+
+  test("does not show loading/empty state row if vendors exist", () => {
+    render(
+      <VendorsTable vendors={mockVendors} isUserLoggedIn={false} isLoading={true} />
+    );
+
+    // The table should show vendor rows, not the empty state row.
+    expect(screen.getByText("Vendor A")).toBeInTheDocument();
+    expect(screen.queryByText(/Loading/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/No results for/i)).not.toBeInTheDocument();
+  });
+});

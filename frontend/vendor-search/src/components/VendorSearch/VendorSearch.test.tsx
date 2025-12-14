@@ -205,3 +205,67 @@ describe("VendorSearch", () => {
     }
   });
 });
+
+test("shows Loading… state when isLoading=true and vendors empty", () => {
+  const mockOnSearch = vi.fn();
+  const mockClearErrorMessage = vi.fn();
+
+  render(
+    <VendorSearch
+      isUserLoggedIn={false}
+      vendors={[]}
+      onSearch={mockOnSearch}
+      lastSearchTerm="yamaha"
+      errorMessage=""
+      clearErrorMessage={mockClearErrorMessage}
+      isLoading={true}
+    />
+  );
+
+  expect(screen.getByText(/Loading/)).toBeInTheDocument();
+  expect(screen.queryByText(/No results for/i)).not.toBeInTheDocument();
+});
+
+test("shows no-results emptyState when search finished with 0 results", () => {
+  const mockOnSearch = vi.fn();
+  const mockClearErrorMessage = vi.fn();
+
+  render(
+    <VendorSearch
+      isUserLoggedIn={false}
+      vendors={[]}
+      onSearch={mockOnSearch}
+      lastSearchTerm="dinky the cat"
+      errorMessage=""
+      clearErrorMessage={mockClearErrorMessage}
+      isLoading={false}
+    />
+  );
+
+  expect(screen.getByText(/No results for/i)).toBeInTheDocument();
+  expect(screen.getByText(/"dinky the cat"/i)).toBeInTheDocument();
+  expect(screen.queryByText(/Loading/)).not.toBeInTheDocument();
+});
+
+test("does NOT show no-results when errorMessage exists", () => {
+  const mockOnSearch = vi.fn();
+  const mockClearErrorMessage = vi.fn();
+
+  render(
+    <VendorSearch
+      isUserLoggedIn={false}
+      vendors={[]}
+      onSearch={mockOnSearch}
+      lastSearchTerm="anything"
+      errorMessage="Failed to load vendors."
+      clearErrorMessage={mockClearErrorMessage}
+      isLoading={false}
+    />
+  );
+
+  // No-results should not show if there's an error
+  expect(screen.queryByText(/No results for/i)).not.toBeInTheDocument();
+
+  // Error should show
+  expect(screen.getByText(/Failed to load vendors/i)).toBeInTheDocument();
+});
