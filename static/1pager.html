@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Canada Music Suppliers & Vendors — 1‑Pager Case Study (Cavanagh‑Aligned)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --blue:#2774c7;
+    --blue-dark:#0056b3;
+    --text:#1f2937;
+    --muted:#6b7280;
+    --border:#e5e7eb;
+    --bg:#ffffff;
+    --bg-soft:#f8f9fa;
+  }
+  body{ font-family: Calibri, Arial, sans-serif; font-size: 10.5pt; color:var(--text);
+        margin: 0.55in 0.65in; background:var(--bg); }
+  h1{ font-size: 13.5pt; margin: 0 0 2pt 0; color:var(--text); }
+  .subtitle{ margin:0 0 10pt 0; color:var(--muted); font-size: 9.8pt; }
+  .row{ display:flex; gap:18pt; align-items:flex-start; }
+  .col{ flex:1; }
+  .meta{ font-size: 9.6pt; color:var(--muted); margin:0 0 10pt 0; }
+  .pill{ display:inline-block; padding:2pt 6pt; border:1px solid var(--border);
+         background:var(--bg-soft); border-radius:999px; margin-right:4pt; }
+  h2{ font-size: 11pt; margin: 10pt 0 4pt 0; font-weight:700; letter-spacing:0.3px; text-transform: uppercase; }
+  ul{ margin:0 0 8pt 18pt; padding:0; }
+  li{ margin:0 0 3pt 0; }
+  a{ color: var(--blue); text-decoration: underline; }
+  .box{ border:1px solid var(--border); background:var(--bg-soft); border-radius:8px; padding:8pt 10pt; }
+  .small{ font-size: 9.6pt; color:var(--muted); }
+  .hr{ height:1px; background:var(--border); margin:10pt 0; }
+  .kpi{ display:flex; gap:10pt; flex-wrap:wrap; margin:4pt 0 0 0; }
+  .kpi > div{ border:1px solid var(--border); border-radius:8px; padding:6pt 8pt; background:#fff; }
+  .kpi b{ color:var(--blue); }
+</style>
+</head>
+<body>
+
+<h1>Canada Music Suppliers & Vendors</h1>
+<div class="subtitle">A small internal tool (React + Django/DRF + Postgres) showcasing production‑grade backend performance, observability, and UI polish.</div>
+
+<div class="meta">
+  <span class="pill">React + TypeScript</span>
+  <span class="pill">Django + DRF</span>
+  <span class="pill">Postgres</span>
+  <span class="pill">Docker / Compose</span>
+  <span class="pill">Pytest + Vitest</span>
+  <span class="pill">OpenAPI (DRF Spectacular)</span>
+</div>
+
+<div class="row">
+  <div class="col">
+    <h2>Problem / Context</h2>
+    <ul>
+      <li>Vendors carry multiple suppliers and categories; users need fast search and clear supplier details (contacts, websites, credentials for authenticated users).</li>
+      <li>After adding a <em>contacts</em> many‑to‑many feature, search became noticeably slower—prompting a real, production‑like query optimization pass.</li>
+    </ul>
+
+    <h2>Key Features Delivered</h2>
+    <ul>
+      <li><strong>Vendor search across relationships</strong> (vendor name, supplier name, category name) with consistent results via <code>distinct()</code>.</li>
+      <li><strong>Role‑aware API</strong>: public vs authenticated serializers (sensitive fields gated behind login).</li>
+      <li><strong>Supplier contacts model</strong>: primary + accounting + additional contacts, returned in API with minimal DB work.</li>
+      <li><strong>UI polish</strong>: loading state in the table, “no results” empty state, and server‑driven pagination controls.</li>
+    </ul>
+  </div>
+
+  <div class="col">
+    <h2>Performance & Scale Work</h2>
+    <ul>
+      <li><strong>N+1 fix</strong>: moved relationship loading to <code>prefetch_related</code> (incl. nested supplier → contacts), keeping DB queries ~constant as result count grows.</li>
+      <li><strong>Regression tests for performance</strong>: pytest query‑count tests validate query growth stays flat in both public and authenticated modes.</li>
+      <li><strong>Verified with EXPLAIN ANALYZE</strong>: validated join strategy and measured end‑to‑end query execution time locally.</li>
+    </ul>
+    <div class="kpi">
+      <div><b>~13ms</b> avg latency (local curl loop)</div>
+      <div><b>~18ms</b> p95 latency (local curl loop)</div>
+      <div><b>~1500</b> vendors / <b>300+</b> suppliers dataset scale</div>
+    </div>
+
+    <h2>Pagination (Backwards Compatible)</h2>
+    <ul>
+      <li><strong>API</strong>: optional page/page_size support (DRF PageNumberPagination).</li>
+      <li><strong>Compatibility</strong>: existing clients continue to work without pagination (legacy array response supported).</li>
+      <li><strong>Frontend</strong>: Prev/Next controls + page metadata; minimal refactor by detecting paginated vs non‑paginated responses.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="hr"></div>
+
+<h2>Operational Readiness / Observability</h2>
+<ul>
+  <li><strong>/healthz endpoint</strong> returning 200 JSON, surfaced as a Docker/Compose healthcheck for safer deploys and easier uptime monitoring.</li>
+  <li><strong>Structured logging</strong> (request context, request_id, user, path, status, duration_ms) enabling quick diagnosis and correlation.</li>
+  <li><strong>Alert path</strong> (e.g., Sentry or OpenTelemetry export) to trace a real error end‑to‑end (capture → context → remediation).</li>
+</ul>
+
+<h2>API Documentation</h2>
+<ul>
+  <li><strong>OpenAPI schema + docs</strong> via DRF Spectacular (Swagger + Redoc) to communicate endpoints/params clearly and enable typed clients.</li>
+</ul>
+
+<h2>Relevance to Thomas Cavanagh Construction (Senior Software Developer)</h2>
+<ul>
+  <li><strong>Design/build/optimize full‑stack systems:</strong> shipped a working internal tool with measurable backend performance improvements and UX enhancements.</li>
+  <li><strong>Scalable backend services (Python/SQL):</strong> query planning, prefetch strategies, pagination, and repeatable regression tests mirror “production” constraints.</li>
+  <li><strong>Operational intelligence:</strong> health checks + structured logs + alerting are foundational for monitoring field/ops systems and debugging issues quickly.</li>
+  <li><strong>Mentorship signal:</strong> codified patterns (tests, pagination contract, observability hooks) that a team can follow and extend.</li>
+</ul>
+
+</body>
+</html>
