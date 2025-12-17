@@ -62,7 +62,7 @@ const App: React.FC = () => {
   ): Promise<void> => {
     const isNewSearch = searchTerm !== lastSearchTerm;
 
-    // When starting a brand new search term, reset pagination immediately.
+    
     if (isNewSearch) {
       setPage(1);
       setTotalCount(0);
@@ -73,8 +73,6 @@ const App: React.FC = () => {
     setLastSearchTerm(searchTerm);
     setSearchError("");
     setIsLoading(true);
-
-    // Optional UX improvement: ensures the "Loading…" row appears in the table
     setVendors([]);
 
     try {

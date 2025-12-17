@@ -133,10 +133,13 @@ test("pagination: shows Next and fetches page 2 when Next is clicked", async () 
   await user.type(screen.getByPlaceholderText(/search vendors/i), "abc");
   await user.click(screen.getByRole("button", { name: /search/i }));
 
-  expect(await screen.findByText("Vendor 1")).toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "Next" })).toBeInTheDocument();
 
-  await user.click(screen.getByRole("button", { name: "Next" }));
+  expect(await screen.findByText("Vendor 1")).toBeInTheDocument();
+
+  const nextButton = await screen.findByRole("button", { name: /next/i });
+  expect(nextButton).toBeInTheDocument();
+
+  await user.click(nextButton);
 
   expect(await screen.findByText("Vendor 2")).toBeInTheDocument();
 });

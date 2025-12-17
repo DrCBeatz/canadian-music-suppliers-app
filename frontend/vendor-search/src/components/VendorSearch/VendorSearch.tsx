@@ -57,6 +57,8 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
       </>
     ) : undefined;
 
+const showPagination = Boolean(pagination) && !errorMessage && !isLoading;
+
   return (
   <div className="vendor-search">
     <SearchForm onSearch={onSearch} />
@@ -68,9 +70,7 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
       emptyState={noResultsMessage}
     />
 
-    {pagination && !errorMessage && (
-      <PaginationControls {...pagination} isLoading={isLoading} />
-    )}
+    {showPagination && <PaginationControls {...pagination!} />}
 
     {errorMessage && (
       <div className="vendor-search__error-message">{errorMessage}</div>

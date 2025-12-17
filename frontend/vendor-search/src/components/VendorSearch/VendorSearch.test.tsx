@@ -269,3 +269,65 @@ test("does NOT show no-results when errorMessage exists", () => {
   // Error should show
   expect(screen.getByText(/Failed to load vendors/i)).toBeInTheDocument();
 });
+
+test("hides pagination controls while loading", () => {
+  const mockOnSearch = vi.fn();
+  const mockClearErrorMessage = vi.fn();
+
+  render(
+    <VendorSearch
+      isUserLoggedIn={false}
+      vendors={[]}
+      onSearch={mockOnSearch}
+      lastSearchTerm="coast"
+      errorMessage=""
+      clearErrorMessage={mockClearErrorMessage}
+      isLoading={true}
+      pagination={{
+        page: 1,
+        pageSize: 25,
+        totalCount: 60,
+        hasNext: true,
+        hasPrev: false,
+        onPrev: vi.fn(),
+        onNext: vi.fn(),
+      }}
+    />
+  );
+
+  // Should not render pagination at all while loading
+  expect(screen.queryByRole("button", { name: /next/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /prev/i })).not.toBeInTheDocument();
+});
+
+test("hides pagination controls when errorMessage exists", () => {
+  const mockOnSearch = vi.fn();
+  const mockClearErrorMessage = vi.fn();
+
+  render(
+    <VendorSearch
+      isUserLoggedIn={false}
+      vendors={[]}
+      onSearch={mockOnSearch}
+      lastSearchTerm="coast"
+      errorMessage="Failed to load vendors."
+      clearErrorMessage={mockClearErrorMessage}
+      isLoading={false}
+      pagination={{
+        page: 1,
+        pageSize: 25,
+        totalCount: 60,
+        hasNext: true,
+        hasPrev: false,
+        onPrev: vi.fn(),
+        onNext: vi.fn(),
+      }}
+    />
+  );
+
+  expect(screen.queryByRole("button", { name: /next/i })).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: /prev/i })).not.toBeInTheDocument();
+
+  // error should still show
+  expect(screen.getByText(/Failed to load vendors/i)).toBeInTheDocument();
+});
