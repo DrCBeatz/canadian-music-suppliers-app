@@ -5,6 +5,34 @@ from django.utils.html import format_html
 from .models import Vendor, Supplier, Category, Contact
 
 
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "role", "primary_contact")
+    search_fields = ("name", "email", "role")
+
+
+class VendorSupplierInline(admin.TabularInline):
+    model = Vendor.suppliers.through
+    extra = 1
+
+
+class VendorAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "display_suppliers",
+    )
+    search_fields = (
+        "name",
+        "suppliers__name",
+    )
+    inlines = [VendorSupplierInline]
+    exclude = ("suppliers",)
+
+    def display_suppliers(self, obj):
+        return ", ".join([supplier.name for supplier in obj.suppliers.all()])
+
+    display_suppliers.short_description = "Suppliers"
+
+
 class SupplierAdmin(admin.ModelAdmin):
     list_display = (
         "name",
@@ -13,6 +41,7 @@ class SupplierAdmin(admin.ModelAdmin):
         "account_active",
     )
 
+    # Remove old fields and search through the M2M instead
     search_fields = (
         "name",
         "website",
@@ -25,6 +54,7 @@ class SupplierAdmin(admin.ModelAdmin):
         "contacts__role",
     )
 
+    # Optional guard: ensures these never appear in the admin form
     exclude = ("contact_name", "contact_email")
 
     readonly_fields = ("display_contacts",)
@@ -71,3 +101,13 @@ class SupplierAdmin(admin.ModelAdmin):
         return format_html(contacts_html)
 
     display_contacts.short_description = "Contacts"
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    search_fields = ("name",)
+
+
+admin.site.register(Contact, ContactAdmin)
+admin.site.register(Vendor, VendorAdmin)
+admin.site.register(Supplier, SupplierAdmin)
+admin.site.register(Category, CategoryAdmin)
