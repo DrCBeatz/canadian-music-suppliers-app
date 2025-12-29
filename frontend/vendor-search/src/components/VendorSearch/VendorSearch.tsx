@@ -46,18 +46,36 @@ const VendorSearch: React.FC<VendorSearchProps> = ({
     }
   }, [lastSearchTerm]);
 
+  const initialEmptyState =
+    !isLoading && !errorMessage && !lastSearchTerm ? (
+      <div className="empty-state" role="note" aria-label="Vendor search instructions">
+        <h3 className="empty-state__title">Search vendors to get started.</h3>
+
+        <ul className="empty-state__list">
+          <li>Type a vendor name to see suppliers and categories.</li>
+          <li>Click a supplier for contact details.</li>
+        </ul>
+
+        {!isUserLoggedIn && (
+          <p className="empty-state__hint">Log in to view additional fields.</p>
+        )}
+      </div>
+    ) : undefined;
+
   const noResultsMessage =
     !isLoading && !errorMessage && lastSearchTerm && vendors.length === 0 ? (
       <>
         No results for{" "}
-        <span className="vendors-table__empty-state-term">
-          "{lastSearchTerm}"
-        </span>
-        .
+        <span className="vendors-table__empty-state-term">"{lastSearchTerm}"</span>.
+        <div style={{ marginTop: 8, opacity: 0.8 }}>
+          Try a different spelling or a broader search.
+        </div>
       </>
     ) : undefined;
 
-const showPagination = Boolean(pagination) && !errorMessage && !isLoading;
+  const emptyState = noResultsMessage ?? initialEmptyState;
+
+  const showPagination = Boolean(pagination) && !errorMessage && !isLoading;
 
   return (
   <div className="vendor-search">
@@ -67,7 +85,7 @@ const showPagination = Boolean(pagination) && !errorMessage && !isLoading;
       vendors={vendors}
       isUserLoggedIn={isUserLoggedIn}
       isLoading={isLoading}
-      emptyState={noResultsMessage}
+      emptyState={emptyState}
     />
 
     {showPagination && <PaginationControls {...pagination!} />}

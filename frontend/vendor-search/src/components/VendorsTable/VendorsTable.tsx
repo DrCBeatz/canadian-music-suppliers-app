@@ -111,6 +111,9 @@ const VendorsTable: React.FC<VendorsTableProps> = ({
   return (
     <div>
       <table className="vendors-table">
+        <caption className="sr-only">
+          Vendor search results. Columns are vendor, suppliers, and categories. Click a supplier to view details.
+        </caption>
         <thead>
           <tr>
             <th className="vendors-table__header-cell">Vendor</th>

@@ -78,8 +78,47 @@
   border-top: 1px solid #ddd;
 }
 
-/* Make the searched term match your blue accent */
 .vendors-table__empty-state-term {
   color: #2774c7;
   font-weight: 600;
+}
+
+.vendors-table__empty-state {
+  text-align: center;
+  padding: 1.25rem 0.75rem;
+}
+
+.empty-state__title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.empty-state__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  opacity: 0.9;
+}
+
+.empty-state__list li {
+  margin: 0.25rem 0;
+}
+
+.empty-state__hint {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

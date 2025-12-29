@@ -331,3 +331,91 @@ test("hides pagination controls when errorMessage exists", () => {
   // error should still show
   expect(screen.getByText(/Failed to load vendors/i)).toBeInTheDocument();
 });
+
+test("does not show login hint when user is logged in", () => {
+  render(
+    <VendorSearch
+      isUserLoggedIn={true}
+      vendors={[]}
+      onSearch={vi.fn()}
+      lastSearchTerm=""
+      errorMessage=""
+      clearErrorMessage={vi.fn()}
+      isLoading={false}
+    />
+  );
+
+  expect(screen.queryByText(/log in to view additional fields/i)).not.toBeInTheDocument();
+});
+
+
+test("shows no-results state (not initial instructions) when search term exists and vendors empty", () => {
+  render(
+    <VendorSearch
+      isUserLoggedIn={false}
+      vendors={[]}
+      onSearch={vi.fn()}
+      lastSearchTerm="oh hai"
+      errorMessage=""
+      clearErrorMessage={vi.fn()}
+      isLoading={false}
+    />
+  );
+
+  expect(screen.getByText(/no results for/i)).toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: /search vendors to get started/i })).not.toBeInTheDocument();
+});
+
+test("does not show initial instructions while loading", () => {
+  render(
+    <VendorSearch
+      isUserLoggedIn={false}
+      vendors={[]}
+      onSearch={vi.fn()}
+      lastSearchTerm=""
+      errorMessage=""
+      clearErrorMessage={vi.fn()}
+      isLoading={true}
+    />
+  );
+
+  expect(screen.getByText(/loading/i)).toBeInTheDocument();
+  expect(screen.queryByRole("heading", { name: /search vendors to get started/i })).not.toBeInTheDocument();
+});
+
+test("shows initial empty-state instructions before any search", () => {
+  render(
+    <VendorSearch
+      isUserLoggedIn={false}
+      vendors={[]}
+      onSearch={vi.fn()}
+      lastSearchTerm=""
+      errorMessage=""
+      clearErrorMessage={vi.fn()}
+      isLoading={false}
+    />
+  );
+
+  const emptyState = screen.getByRole("note", {
+    name: /vendor search instructions/i,
+  });
+
+  expect(
+    within(emptyState).getByRole("heading", {
+      level: 3,
+      name: /search vendors to get started/i,
+    })
+  ).toBeInTheDocument();
+
+  expect(
+    within(emptyState).getByText(/type a vendor name to see suppliers and categories/i)
+  ).toBeInTheDocument();
+
+  expect(
+    within(emptyState).getByText(/click a supplier for contact details/i)
+  ).toBeInTheDocument();
+
+  expect(
+    within(emptyState).getByText(/log in to view additional fields/i)
+  ).toBeInTheDocument();
+});
